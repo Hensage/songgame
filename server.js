@@ -1,4 +1,4 @@
-
+const config = require('config');
 const express = require("express");
 const axios = require('axios');
 const querystring = require('node:querystring'); 
@@ -14,8 +14,8 @@ let password = makeid(16)
 
 var redirect_uri = 'http://192.168.1.70:3000/callback';
 
-const client_id = '6eb87f01d4754b4fbbeeb217eaca8a94';
-const client_secret = '8ac1b0fc9d5547c186bbfc791efdd5a8';
+const client_id = config.get('client_id');
+const client_secret = config.get('client_secret');
 
 app.use(express.static("public"));
 app.use(express.json());
