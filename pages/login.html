@@ -1,0 +1,48 @@
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+<body style="color: white;">
+    <div class="container vh-100 d-flex flex-column align-items-center p-2">
+        <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
+            <button id="login" onclick="login()" class="btn btn-Primary btn-lg align-items-center">
+                <span id="loginSpinner" class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                <span role="status">Login in to become Host</span>
+            </button>
+            <div class="container align-items-center mt-5 mb-5 text-center fw-bold">
+                Otherwise please wait for a host to join
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    let loging = false
+    async function login(){
+        loging = true
+        document.getElementById("loginSpinner").classList.remove("d-none");
+        document.getElementById("login").disabled=true
+        window.location = "/login";
+        setTimeout(() => {loging = false}, 20000)
+    }
+
+    async function checkIfHost(){
+        if (!loging){
+            if (!document.getElementById("loginSpinner").classList.contains("d-none")){
+                document.getElementById("loginSpinner").classList.add("d-none");
+                document.getElementById("login").disabled=false
+            }
+            const response = await fetch(`/isHost`)
+            answer = await response.text()
+            console.log(answer)
+            if (answer == "true"){
+                window.location = "/";
+            }
+     }
+    }
+    setInterval(checkIfHost,1000);
+</script>

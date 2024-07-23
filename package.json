@@ -1,0 +1,26 @@
+{
+  "name": "songgame",
+  "version": "1.0.0",
+  "description": "A party game where you all put 3 songs into a spotify playlist",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hensage/songgame.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hensage/songgame/issues"
+  },
+  "homepage": "https://github.com/Hensage/songgame#readme",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "bootstrap": "^5.3.3",
+    "express": "^4.19.2"
+  }
+}

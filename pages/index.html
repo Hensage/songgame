@@ -1,0 +1,317 @@
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+<body style="color: white;">
+    
+    <div class="container vh-100 d-flex flex-column align-items-center p-2">
+        <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
+            <div id="hostname" class="container fw-bold">
+                The host is
+            </div>
+            <div id="adminonly" class="row"  style="display: none">
+                <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger btn-lg align-items-center">Clear all songs in playlist</button>
+                <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary btn-lg align-items-center">Submit to spotify</button>
+            </div>
+            <div class="container align-items-center text-center fw-bold">
+                Number of songs in playlist
+                <div id="playlistcount">4</div>
+            </div>
+        </div>
+        <div class="row container align-items-center text-center p-1 m-1 highlightBox">
+            <div class="fw-bold" >
+                Your songs 
+            </div>
+            <div class="table-responsive">
+                <table class="table table-light">
+                    <tbody id="yoursongs" style="color: white;">
+                    <tr class="table-light d-none" id="examplesong">
+                        <th scope="row" class="yoursonglabel col-9 table-light"></th>
+                        <td class="align-middle col-1 table-light"><button onclick="remove(0)" class="btn btn-Danger">X</button></td>
+                    </tr>
+                    <!--
+                    <tr class="yoursong table-light d-none">
+                        <th scope="row" class="yoursonglabel col-9 table-light"></th>
+                        <td class="align-middle col-1 table-light"><button onclick="remove(1)" class="btn btn-Danger">X</button></td>
+                    </tr>
+                    <tr class="yoursong table-light d-none">
+                        <th scope="row" class="yoursonglabel col-9 table-light"></th>
+                        <td class="align-middle col-1 table-light"><button onclick="remove(2)" class="btn btn-Danger">X</button></td>
+                    </tr>
+                    -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row container align-items-center text-center p-1 m-1">
+            <button class="btn btn-primary btn-lg align-items-center" data-bs-toggle="modal" data-bs-target="#addModal">Add new song</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h1 class="modal-title fs-5" id="addModalLabel">Add new song</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body align-items-center text-center">
+                <div class="alert alert-warning" style="display: none;" role="alert" id="addModalError">Song already exists</div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="songinput" style="background-color: white;" placeholder="Song title" autocomplete="off">
+                    <div class="input-group-append">
+                        <button id="searchbutton" type="button" onclick="searchSongs()" class="btn btn-primary">
+                            <img style="height: 25px" src="magnifying-glass.svg"/>
+                        </button>
+                    </div>
+                </div>
+                <div class="spinner-border text-light mt-5" id="searchloader" style="display: none;" role="status">
+                </div>
+                <ul class="list-group" id="suggestions"></ul>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="submitModalLabel">Submit to Spotify?</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body align-items-center text-center">
+                    This will stop all other players from adding songs, and the game will begin
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="submit()">Yes</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="clearModal" tabindex="-1" aria-labelledby="clearModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="clearModalLabel">Clear all songs?</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="clearPlaylist()">Yes</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Playlist building phase is over</h1>
+                </div>
+                <div id="endGameBody" class="modal-body">
+                    The host has submitted the playlist and now has the spotify link. The game can now begin! You can now close this tab.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="spotLink" class="btn btn-primary d-none" onclick="window.open(playlistLink, '_blank');">Link to Spotify</button>
+                </div>
+            </div>
+            </div>
+        </div>
+</body>
+</html>
+
+<script>
+
+    var playerID = localStorage.getItem("playerID");
+    if (playerID == null){
+        playerID = uuidv4();
+        localStorage.setItem("playerID", playerID)
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    var pass = urlParams.get("p")
+
+    var search = ""
+    var searching = false
+
+    var playlistLink = ""
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const input = document.getElementById('songinput');
+        const suggestions = document.getElementById('suggestions');
+    
+        infoRequest = await fetch(`/loadinfo?p=`+pass);
+        info = await infoRequest.json();
+        document.getElementById("hostname").innerHTML = "The host is " + info.hostName
+        if (info.isPlayerHost==true){
+            document.getElementById("adminonly").classList.add("d-flex")
+        }
+
+        update()
+        setInterval(update, 1000)
+
+        input.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                searchSongs();
+            }
+        });
+    });
+
+    async function searchSongs(){
+        const input = document.getElementById('songinput');
+        const searchButton = document.getElementById('searchbutton');
+        const suggestions = document.getElementById('suggestions');
+        if (!searching){
+            $("#searchloader").show();
+            input.disabled = true;
+            searchButton.disabled = true;
+            suggestions.innerHTML = '';
+            searching=true
+            const query = input.value;
+            //console.log("Request sent")
+            const response = await fetch(`/search?query=${query}`);
+            const songs = await response.json();
+            //console.log("received")
+            suggestions.innerHTML = '';
+            songs.forEach(song => {
+                const li = document.createElement('li');
+                li.classList.add("list-group-item");
+                li.classList.add("list-group-item-action");
+                li.classList.add("list-group-item-primary");
+                li.textContent = `${song.name} by ${song.artists.map(artist => artist.name).join(', ')}`;
+                li.addEventListener('click', () => {
+                    suggestions.innerHTML = '';
+                    input.value='';
+                    addSong(song);
+                });
+                suggestions.appendChild(li);
+            });
+            $("#searchloader").hide();
+            input.disabled = false;
+            searchButton.disabled = false;
+            searching=false
+        }
+    }
+
+    async function addSong(song){
+        song.playerID = playerID
+        console.log(song)
+        const response = await fetch(`/add`, {
+                method: "POST",
+                headers:{
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(song),
+        });
+        const body = await response.text();
+        switch(body){
+            case "Added":
+                $('#addModalError').hide();
+                $('#addModal').modal('hide');
+                break;
+            default:
+                $('#addModalError').text(body);
+                $('#addModalError').show();
+                setTimeout(() => {
+                    $('#addModalError').hide();
+                },1000)
+                break;
+        }
+        update()
+    }
+
+    async function update(){
+        const response = await fetch(`/update?playerID=${playerID}`);
+        const body = await response.json();
+        if (!body.isPlaying){
+            $('#staticBackdrop').modal('show');
+            if (playlistLink != ""){
+                $('#endGameBody').text("The link to the playlist here")
+                document.getElementById("spotLink").classList.remove("d-none");
+            }
+            return
+        }
+
+        let currentsongids = body.items.map((song) => song.id);
+
+        let examplesong = document.getElementById("examplesong")
+
+        var yourssongs = document.getElementsByClassName("yoursong");
+
+        Array.from(yourssongs).forEach((song) => {
+            if (!currentsongids.includes(song.id)){
+                song.remove()
+                return
+            }else{
+                currentsongids.splice(currentsongids.indexOf(song.id),1);
+            }
+        })
+
+        body.items.forEach((song,index) => {
+            if (song.id != null && currentsongids.includes(song.id)){
+                let newsong = examplesong.cloneNode(true)
+                newsong.id = song.id
+                newsong.getElementsByClassName("yoursonglabel")[0].innerHTML = song.name +" by "+ song.artists.map(artist => artist.name).join(', ')
+                newsong.getElementsByTagName("button")[0].setAttribute( "onClick", "javascript: remove(this.parentNode.parentNode.id)");
+                newsong.classList.add("yoursong");
+                newsong.classList.remove("d-none");
+                document.getElementById("yoursongs").appendChild(newsong)
+            }
+        })
+        /*
+        body.items.forEach((song,index) => {
+            if (song.id != null){
+                yourssongs[index].getElementsByClassName("yoursonglabel")[0].innerHTML=song.name +" by "+ song.artists.map(artist => artist.name).join(', ')
+                yourssongs[index].id = song.id
+                yourssongs[index].classList.remove("d-none");
+            }else if (!yourssongs[index].classList.contains("d-none")){
+                yourssongs[index].classList.add("d-none");
+            }
+        })
+        */
+        document.getElementById("playlistcount").innerHTML = body.count
+    }
+
+    async function remove(id){
+        /*
+        var yourssongs = document.getElementsByClassName("yoursong");
+        await fetch(`/remove?songID=${yourssongs[index].id}`)
+        */
+        //console.log(id)
+        await fetch(`/remove?songID=`+id)
+        update()
+    }
+    async function clearPlaylist(){
+        console.log("YOOO")
+        await fetch(`/clear?p=`+pass,{method: "POST"});
+        update()
+    }
+    async function submit(){
+        var response = await fetch(`/submit?p=`+pass,{method: "POST"});
+        const body = await response.text();
+        console.log("SUMBIT REsponse",body)
+        playlistLink = body
+    }
+
+    function uuidv4() {
+        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+            (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+    );
+}
+</script>
