@@ -17,14 +17,23 @@
                 <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger btn-lg align-items-center">Clear all songs in playlist</button>
                 <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary btn-lg align-items-center">Submit to spotify</button>
             </div>
-            <div class="container align-items-center text-center fw-bold">
-                Number of songs in playlist
-                <div id="playlistcount">4</div>
+            <div class="row">
+                <div class="col align-items-center text-center fw-bold">
+                    Number of players
+                    <div id="playercount">4</div>
+                </div>
+                <div class="col align-items-center text-center fw-bold">
+                    Number of songs in playlist
+                    <div id="playlistcount">4</div>
+                </div>
             </div>
         </div>
         <div class="row container align-items-center text-center p-1 m-1 highlightBox">
             <div class="fw-bold" >
-                Your songs 
+                Your songs
+                <div class="fs-6 fw-normal fst-italic" id="yoursongcount">
+                    0/0
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-light">
@@ -33,16 +42,6 @@
                         <th scope="row" class="yoursonglabel col-9 table-light"></th>
                         <td class="align-middle col-1 table-light"><button onclick="remove(0)" class="btn btn-Danger">X</button></td>
                     </tr>
-                    <!--
-                    <tr class="yoursong table-light d-none">
-                        <th scope="row" class="yoursonglabel col-9 table-light"></th>
-                        <td class="align-middle col-1 table-light"><button onclick="remove(1)" class="btn btn-Danger">X</button></td>
-                    </tr>
-                    <tr class="yoursong table-light d-none">
-                        <th scope="row" class="yoursonglabel col-9 table-light"></th>
-                        <td class="align-middle col-1 table-light"><button onclick="remove(2)" class="btn btn-Danger">X</button></td>
-                    </tr>
-                    -->
                     </tbody>
                 </table>
             </div>
@@ -264,7 +263,7 @@
         })
 
         body.items.forEach((song,index) => {
-            if (song.id != null && currentsongids.includes(song.id)){
+            if (currentsongids.includes(song.id)){
                 let newsong = examplesong.cloneNode(true)
                 newsong.id = song.id
                 newsong.getElementsByClassName("yoursonglabel")[0].innerHTML = song.name +" by "+ song.artists.map(artist => artist.name).join(', ')
@@ -274,18 +273,10 @@
                 document.getElementById("yoursongs").appendChild(newsong)
             }
         })
-        /*
-        body.items.forEach((song,index) => {
-            if (song.id != null){
-                yourssongs[index].getElementsByClassName("yoursonglabel")[0].innerHTML=song.name +" by "+ song.artists.map(artist => artist.name).join(', ')
-                yourssongs[index].id = song.id
-                yourssongs[index].classList.remove("d-none");
-            }else if (!yourssongs[index].classList.contains("d-none")){
-                yourssongs[index].classList.add("d-none");
-            }
-        })
-        */
-        document.getElementById("playlistcount").innerHTML = body.count
+
+        document.getElementById("playlistcount").innerHTML = body.count+" / "+(body.playerCount*body.songsPerPerson)
+        document.getElementById("playercount").innerHTML = body.playerCount
+        document.getElementById("yoursongcount").innerHTML = body.items.length + " / " + body.songsPerPerson
     }
 
     async function remove(id){
