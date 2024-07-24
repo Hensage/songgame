@@ -13,6 +13,9 @@ var playlist = [];
 var playlistURL = '';
 let password = myhelper.makeid(16)
 
+var playerCount = 0;
+var songsPerPerson = 5;
+
 var redirect_uri = 'http://192.168.1.70:3000/callback';
 
 const client_id = config.get('client_id');
@@ -70,6 +73,16 @@ function getSongCountForPlayer(playerID){
     return count
 }
 
+function tick(){
+    let ids = []
+    playlist.forEach((song) => {
+        if (!ids.includes(song.playerID)){
+            ids.push(song.playerID)
+        }
+    })
+    playerCount = ids.length
+}
+
 app.get("/", (req, res) => {
     if (hostid === '') {
         res.sendFile("./login.html", { root: __dirname+"/pages"});
@@ -92,7 +105,6 @@ app.get("/loadinfo", (req, res) => {
 });
 
 app.get('/login', async (req, res) =>{
-
     var state = myhelper.makeid(16);
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
 
@@ -154,19 +166,21 @@ app.get('/update', async (req, res) => {
     if (playlistURL == '') {
         playing=true
         var id = req.query["playerID"];
-        var num = 0
-        var theirSong = [{},{},{}]
+
+        var theirSong = []
         playlist.forEach((song) => {
             if (id === song.playerID) {
-                theirSong[num]=song;
-                num++
-                if (num==3){
-                    return
-                }
+                theirSong.push(song);
             }
         })
     }
-    var response = {isPlaying:playing, count:playlist.length, items:theirSong}
+    var response = {
+        isPlaying:playing,
+        playerCount:playerCount,
+        songsPerPerson:songsPerPerson,
+        count:playlist.length,
+        items:theirSong
+    }
     res.json(response);
 });
 
@@ -217,8 +231,8 @@ app.post('/add', async (req, res) => {
             return;
         }
     })
-    if (getSongCountForPlayer(body.playerID)>=3){
-        res.send("You have already added 3 songs");
+    if (getSongCountForPlayer(body.playerID) >= songsPerPerson){
+        res.send("You have already added all your songs");
         return
     }
     if (exists){
@@ -230,6 +244,8 @@ app.post('/add', async (req, res) => {
         return
     }
  });
+
+setInterval(tick,1000);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
