@@ -144,6 +144,7 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     
+    var gameid = urlParams.get("gameid")
     var pass = urlParams.get("p")
 
     var search = ""
@@ -155,7 +156,7 @@
         const input = document.getElementById('songinput');
         const suggestions = document.getElementById('suggestions');
     
-        infoRequest = await fetch(`/loadinfo?p=`+pass);
+        infoRequest = await fetch(`/loadinfo?gameid=`+gameid+`&p=`+pass);
         info = await infoRequest.json();
         document.getElementById("hostname").innerHTML = "The host is " + info.hostName
         if (info.isPlayerHost==true){
@@ -236,8 +237,14 @@
     }
 
     async function update(){
-        const response = await fetch(`/update?playerID=${playerID}`);
+        const response = await fetch(`/update?gameid=`+gameid+`&playerID=${playerID}`);
         const body = await response.json();
+
+        if (body.validGame == false){
+            window.location = "/";
+            return
+        }
+
         if (!body.isPlaying){
             $('#staticBackdrop').modal('show');
             if (playlistLink != ""){

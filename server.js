@@ -2,10 +2,12 @@ const config = require('config');
 const express = require("express");
 const axios = require('axios');
 const myhelper = require('./mymodules/helper');
+const game = require('./mymodules/game');
 const querystring = require('node:querystring'); 
 const app = express();
 const port = 3000;
 
+/*
 let hostName='';
 let hostid='';
 var accessToken = '';
@@ -15,6 +17,9 @@ let password = myhelper.makeid(16)
 
 var playerCount = 0;
 var songsPerPerson = 5;
+*/
+
+var games = [];
 
 var redirect_uri = 'http://192.168.1.70:3000/callback';
 
@@ -73,6 +78,19 @@ function getSongCountForPlayer(playerID){
     return count
 }
 
+function getGame(gameid){
+    let currentGame;
+    let found = false;
+    games.forEach((game) => {
+        if (game.gameid == gameid){
+            currentGame= game
+            found = true
+            return
+        }
+    })
+    return {game:currentGame,found:found};
+}
+
 function tick(){
     let ids = []
     playlist.forEach((song) => {
@@ -84,22 +102,41 @@ function tick(){
 }
 
 app.get("/", (req, res) => {
-    if (hostid === '') {
+    let currentGame = req.query.gameid
+    let foundGame = false
+    games.forEach((game) => {
+        if (game.gameid == currentGame){
+            res.sendFile("./index.html", { root: __dirname+"/pages"});
+            foundGame =true
+            return
+        }
+    })
+    if (!foundGame) {
         res.sendFile("./login.html", { root: __dirname+"/pages"});
-    }else{
-        res.sendFile("./index.html", { root: __dirname+"/pages"});
     }
+});
+
+app.get("/isHost", (req, res) => {
+    res.send("false")
 });
 
 app.get("/loadinfo", (req, res) => {
     let isPlayerHost=false
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
+
+    if (gameSearch.found == false){
+        res.redirect("/")
+        return
+    }
+
     let pass = req.query.p
-    console.log(pass,password)
-    if (pass == password){
+
+    if (pass == gameSearch.game.password){
         isPlayerHost=true
     }
     res.send({
-        hostName: hostName,
+        hostName: gameSearch.game.hostName,
         isPlayerHost: isPlayerHost,
     });
 });
@@ -130,15 +167,15 @@ app.get('/callback', async (req, res) => {
             }));
         return
     }
-    accessToken = await getToken(code)
+    let accessToken = await getToken(code)
     const response = await axios.get(`https://api.spotify.com/v1/me`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     });
-    hostName = response.data.display_name
-    hostid = response.data.id
-    res.redirect('/?p='+password);
+    let newGame=  new game.game(response.data.id,response.data.display_name,accessToken,3)
+    games.push(newGame)
+    res.redirect('/?gameid='+newGame.gameid+'&p='+newGame.password);
 });
 
 // Endpoint to search for songs
@@ -162,23 +199,34 @@ app.get('/search', async (req, res) => {
 });
 
 app.get('/update', async (req, res) => {
-    playing = false
-    if (playlistURL == '') {
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
+
+    let theirSong = []
+    let playing = false
+
+    if (!gameSearch.found){
+        var response = {
+            validGame:false
+        }
+        res.json(response);
+        return
+    }
+    if (gameSearch.game.playlistURL == '') {
         playing=true
         var id = req.query["playerID"];
-
-        var theirSong = []
-        playlist.forEach((song) => {
+        gameSearch.game.playlist.forEach((song) => {
             if (id === song.playerID) {
                 theirSong.push(song);
             }
         })
     }
     var response = {
+        validGame:gameSearch.found,
         isPlaying:playing,
-        playerCount:playerCount,
-        songsPerPerson:songsPerPerson,
-        count:playlist.length,
+        playerCount:gameSearch.game.playerCount,
+        songsPerPerson:gameSearch.game.songsPerPerson,
+        count:gameSearch.game.playlist.length,
         items:theirSong
     }
     res.json(response);
@@ -244,8 +292,6 @@ app.post('/add', async (req, res) => {
         return
     }
  });
-
-setInterval(tick,1000);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
