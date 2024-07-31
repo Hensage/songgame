@@ -29,30 +29,6 @@ const client_secret = config.get('client_secret');
 app.use(express.static("public"));
 app.use(express.json());
 
-async function createPlaylist(){
-    const response = await axios.post(`https://api.spotify.com/v1/users/`+hostid+`/playlists`,
-        {
-            name:"Song Game",
-            description:"A party game where you all put 3 songs into a spotify playlist",
-            public:true
-        }, 
-        {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        },
-        
-        });
-        return response;
-}
-
-async function addToPlaylist(id,uris){
-    const response = await axios.post(`https://api.spotify.com/v1/playlists/`+id+`/tracks?position=0&uris=`+uris,{}, {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`
-        }
-        });
-}
 
 async function getToken(code){
     const params = new URLSearchParams({ code: code, redirect_uri: redirect_uri,grant_type: 'authorization_code' });
@@ -68,16 +44,6 @@ async function getToken(code){
     return accessToken
 }
 
-function getSongCountForPlayer(playerID){
-    var count =0
-    playlist.forEach((song) => {
-        if (playerID === song.playerID) {
-            count++
-        }
-    })
-    return count
-}
-
 function getGame(gameid){
     let currentGame;
     let found = false;
@@ -89,16 +55,6 @@ function getGame(gameid){
         }
     })
     return {game:currentGame,found:found};
-}
-
-function tick(){
-    let ids = []
-    playlist.forEach((song) => {
-        if (!ids.includes(song.playerID)){
-            ids.push(song.playerID)
-        }
-    })
-    playerCount = ids.length
 }
 
 app.get("/", (req, res) => {
@@ -116,29 +72,8 @@ app.get("/", (req, res) => {
     }
 });
 
-app.get("/isHost", (req, res) => {
-    res.send("false")
-});
-
-app.get("/loadinfo", (req, res) => {
-    let isPlayerHost=false
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
-
-    if (gameSearch.found == false){
-        res.redirect("/")
-        return
-    }
-
-    let pass = req.query.p
-
-    if (pass == gameSearch.game.password){
-        isPlayerHost=true
-    }
-    res.send({
-        hostName: gameSearch.game.hostName,
-        isPlayerHost: isPlayerHost,
-    });
+app.get("/getGames", (req, res) => {
+    res.send(games);
 });
 
 app.get('/login', async (req, res) =>{
@@ -198,12 +133,30 @@ app.get('/search', async (req, res) => {
   }
 });
 
-app.get('/update', async (req, res) => {
+
+app.get("/loadinfo", (req, res) => {
+    let isPlayerHost=false
     let gameid = req.query.gameid
     let gameSearch = getGame(gameid);
 
-    let theirSong = []
-    let playing = false
+    if (gameSearch.found == false){
+        return
+    }
+
+    let pass = req.query.p
+
+    if (pass == gameSearch.game.password){
+        isPlayerHost=true
+    }
+    res.send({
+        hostName: gameSearch.game.hostName,
+        isPlayerHost: isPlayerHost,
+    });
+});
+
+app.get('/update', async (req, res) => {
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
 
     if (!gameSearch.found){
         var response = {
@@ -212,85 +165,61 @@ app.get('/update', async (req, res) => {
         res.json(response);
         return
     }
-    if (gameSearch.game.playlistURL == '') {
-        playing=true
-        var id = req.query["playerID"];
-        gameSearch.game.playlist.forEach((song) => {
-            if (id === song.playerID) {
-                theirSong.push(song);
-            }
-        })
-    }
-    var response = {
-        validGame:gameSearch.found,
-        isPlaying:playing,
-        playerCount:gameSearch.game.playerCount,
-        songsPerPerson:gameSearch.game.songsPerPerson,
-        count:gameSearch.game.playlist.length,
-        items:theirSong
-    }
-    res.json(response);
+    let playerID = req.query.playerID
+    res.json(gameSearch.game.update(playerID));
 });
 
 app.get('/remove', async (req, res) => {
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
+
+    if (gameSearch.found == false){
+        return
+    }
+
     var id = req.query["songID"];
-    playlist.forEach((song,index) => {
-        if (id === song.id) {
-            playlist.splice(index,1)
-        }
-    })
+    gameSearch.game.removeSong(id);
     res.sendStatus(200);
 });
 
 // Will be just for admin
 app.post('/submit', async (req, res) => {
-    var playlistData = await createPlaylist()
-    if (playlist.length>0){
-        var query = ""
-        myhelper.shuffle(playlist)
-        playlist.forEach((song)=>{
-            query = query+","+song.uri
-        })
-        query = query.slice(1)
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
+
+    if (gameSearch.found == false){
+        return
     }
-    await addToPlaylist(playlistData.data.id,query)
-    playlist=[]
-    playlistURL = playlistData.data.external_urls.spotify
-    res.send(playlistURL);
+
+    let pass = req.query.p
+    res.send(await gameSearch.game.submit(pass));
 });
 
 // Will be just for admin
 app.post('/clear', async (req, res) => {
-    let pass = req.query.p
-    console.log(pass,password)
-    if (pass == password){
-        playlist =[]
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
+
+    if (gameSearch.found == false){
+        return
     }
+
+    let pass = req.query.p
+    gameSearch.game.clear(pass);
     res.sendStatus(200);
 });
 
 // Endpoint to search for songs
 app.post('/add', async (req, res) => {
+    let gameid = req.query.gameid
+    let gameSearch = getGame(gameid);
+
+    if (gameSearch.found == false){
+        return
+    }
+
     var body = req.body;
-    var exists = false
-    playlist.forEach((song) => {
-        if (song.id === body.id) {
-            exists = true;
-            return;
-        }
-    })
-    if (getSongCountForPlayer(body.playerID) >= songsPerPerson){
-        res.send("You have already added all your songs");
-        return
-    }
-    if (exists){
-        res.send("This song is already in the playlist");
-        return
-    }else{
-        playlist.push(body);
-        res.send("Added");
-        return
-    }
+    res.send(gameSearch.game.addSong(body));
  });
 
 app.listen(port, () => {

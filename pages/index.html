@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
 <body style="color: white;">
-    
     <div class="container vh-100 d-flex flex-column align-items-center p-2">
         <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
             <div id="hostname" class="container fw-bold">
@@ -212,7 +211,7 @@
     async function addSong(song){
         song.playerID = playerID
         console.log(song)
-        const response = await fetch(`/add`, {
+        const response = await fetch(`/add?gameid=`+gameid, {
                 method: "POST",
                 headers:{
                     "Content-Type": "application/json",
@@ -292,16 +291,16 @@
         await fetch(`/remove?songID=${yourssongs[index].id}`)
         */
         //console.log(id)
-        await fetch(`/remove?songID=`+id)
+        await fetch(`/remove?songID=`+id+`&gameid=`+gameid);
         update()
     }
     async function clearPlaylist(){
         console.log("YOOO")
-        await fetch(`/clear?p=`+pass,{method: "POST"});
+        await fetch(`/clear?gameid=`+gameid+`&p=`+pass,{method: "POST"});
         update()
     }
     async function submit(){
-        var response = await fetch(`/submit?p=`+pass,{method: "POST"});
+        var response = await fetch(`/submit?gameid=`+gameid+`&p=`+pass,{method: "POST"});
         const body = await response.text();
         console.log("SUMBIT REsponse",body)
         playlistLink = body
