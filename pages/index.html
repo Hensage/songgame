@@ -7,12 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 </head>
 <body style="color: white;">
-    
     <div class="container vh-100 d-flex flex-column align-items-center p-2">
-        <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
+        <div class="row container d-flex align-items-center text-center p-1 m-1 highlightBox">
+            <div class="d-flex">
+                <button class="btn btn-Danger float-left"data-bs-toggle="modal" data-bs-target="#leaveModal">Leave Game</button>
+            </div>
             <div id="hostname" class="container fw-bold">
                 The host is
             </div>
+        </div>
+        <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
             <div id="adminonly" class="row"  style="display: none">
                 <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger btn-lg align-items-center">Clear all songs in playlist</button>
                 <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary btn-lg align-items-center">Submit to spotify</button>
@@ -116,6 +120,26 @@
         </div>
 
         <!-- Modal -->
+        <div class="modal fade" id="leaveModal" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="leaveModalLabel">Leave Game?</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="leaveText" class="modal-body align-items-center text-center">
+                    Are you sure you want to leave the game?
+                    If you are the Host, this will close the game.
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-Primary" data-bs-dismiss="modal">Stay</button>
+                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="leaveGame()">Leave</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        
+        <!-- Modal -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
             <div class="modal-content">
@@ -123,9 +147,10 @@
                 <h1 class="modal-title fs-5" id="staticBackdropLabel">Playlist building phase is over</h1>
                 </div>
                 <div id="endGameBody" class="modal-body">
-                    The host has submitted the playlist and now has the spotify link. The game can now begin! You can now close this tab.
+                    The host has submitted the playlist and now has the spotify link. The game can now begin! You can now leave the game.
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="leaveGame()">Leave</button>
                     <button type="button" id="spotLink" class="btn btn-primary d-none" onclick="window.open(playlistLink, '_blank');">Link to Spotify</button>
                 </div>
             </div>
@@ -143,8 +168,11 @@
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    
-    var pass = urlParams.get("p")
+
+    const paramPlayerID = urlParams.get('playerID')
+    if (paramPlayerID != playerID){
+        window.location = `/?playerID=${playerID}`;
+    }
 
     var search = ""
     var searching = false
@@ -155,8 +183,14 @@
         const input = document.getElementById('songinput');
         const suggestions = document.getElementById('suggestions');
     
-        infoRequest = await fetch(`/loadinfo?p=`+pass);
+        infoRequest = await fetch(`/loadinfo?playerID=${playerID}`);
         info = await infoRequest.json();
+
+        if (!info.validGame) {
+            window.location = `/?playerID=${playerID}`;
+            return
+        }
+        
         document.getElementById("hostname").innerHTML = "The host is " + info.hostName
         if (info.isPlayerHost==true){
             document.getElementById("adminonly").classList.add("d-flex")
@@ -183,10 +217,8 @@
             suggestions.innerHTML = '';
             searching=true
             const query = input.value;
-            //console.log("Request sent")
-            const response = await fetch(`/search?query=${query}`);
+            const response = await fetch(`/search?playerID=${playerID}&query=${query}`);
             const songs = await response.json();
-            //console.log("received")
             suggestions.innerHTML = '';
             songs.forEach(song => {
                 const li = document.createElement('li');
@@ -209,9 +241,7 @@
     }
 
     async function addSong(song){
-        song.playerID = playerID
-        console.log(song)
-        const response = await fetch(`/add`, {
+        const response = await fetch(`/add?playerID=${playerID}`, {
                 method: "POST",
                 headers:{
                     "Content-Type": "application/json",
@@ -238,6 +268,12 @@
     async function update(){
         const response = await fetch(`/update?playerID=${playerID}`);
         const body = await response.json();
+
+        if (!body.validGame) {
+            window.location = `/?playerID=${playerID}`;
+            return
+        }
+        
         if (!body.isPlaying){
             $('#staticBackdrop').modal('show');
             if (playlistLink != ""){
@@ -280,24 +316,22 @@
     }
 
     async function remove(id){
-        /*
-        var yourssongs = document.getElementsByClassName("yoursong");
-        await fetch(`/remove?songID=${yourssongs[index].id}`)
-        */
-        //console.log(id)
-        await fetch(`/remove?songID=`+id)
+        await fetch(`/remove?playerID=${playerID}&songID=${id}`);
         update()
     }
     async function clearPlaylist(){
-        console.log("YOOO")
-        await fetch(`/clear?p=`+pass,{method: "POST"});
+        await fetch(`/clear?playerID=${playerID}`,{method: "POST"});
         update()
     }
     async function submit(){
-        var response = await fetch(`/submit?p=`+pass,{method: "POST"});
+        var response = await fetch(`/submit?playerID=${playerID}`,{method: "POST"});
         const body = await response.text();
-        console.log("SUMBIT REsponse",body)
         playlistLink = body
+    }
+
+    async function leaveGame(){
+        var response = await fetch(`/leaveGame?playerID=${playerID}`,{method: "POST"});
+        window.location = `/?playerID=${playerID}`;
     }
 
     function uuidv4() {

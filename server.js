@@ -2,10 +2,12 @@ const config = require('config');
 const express = require("express");
 const axios = require('axios');
 const myhelper = require('./mymodules/helper');
+const game = require('./mymodules/game');
 const querystring = require('node:querystring'); 
 const app = express();
 const port = 3000;
 
+/*
 let hostName='';
 let hostid='';
 var accessToken = '';
@@ -15,6 +17,11 @@ let password = myhelper.makeid(16)
 
 var playerCount = 0;
 var songsPerPerson = 5;
+*/
+
+var games = [];
+
+var loggingIn = {}
 
 var redirect_uri = 'http://192.168.1.70:3000/callback';
 
@@ -24,30 +31,6 @@ const client_secret = config.get('client_secret');
 app.use(express.static("public"));
 app.use(express.json());
 
-async function createPlaylist(){
-    const response = await axios.post(`https://api.spotify.com/v1/users/`+hostid+`/playlists`,
-        {
-            name:"Song Game",
-            description:"A party game where you all put 3 songs into a spotify playlist",
-            public:true
-        }, 
-        {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        },
-        
-        });
-        return response;
-}
-
-async function addToPlaylist(id,uris){
-    const response = await axios.post(`https://api.spotify.com/v1/playlists/`+id+`/tracks?position=0&uris=`+uris,{}, {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`
-        }
-        });
-}
 
 async function getToken(code){
     const params = new URLSearchParams({ code: code, redirect_uri: redirect_uri,grant_type: 'authorization_code' });
@@ -63,49 +46,95 @@ async function getToken(code){
     return accessToken
 }
 
-function getSongCountForPlayer(playerID){
-    var count =0
-    playlist.forEach((song) => {
-        if (playerID === song.playerID) {
-            count++
+function getGameByGameID(gameid){
+    let currentGame;
+    let found = false;
+    games.forEach((game) => {
+        if (game.gameid == gameid){
+            currentGame= game
+            found = true
+            return
         }
     })
-    return count
+    return {game:currentGame,found:found};
 }
 
-function tick(){
-    let ids = []
-    playlist.forEach((song) => {
-        if (!ids.includes(song.playerID)){
-            ids.push(song.playerID)
+function getGameByPlayerID(playerID){
+    let currentGame;
+    let found = false;
+    games.forEach((game) => {
+        if (game.isPlayerInGame(playerID)){
+            currentGame= game
+            found = true
+            return
         }
     })
-    playerCount = ids.length
+    return {game:currentGame,found:found};
 }
+
 
 app.get("/", (req, res) => {
-    if (hostid === '') {
-        res.sendFile("./login.html", { root: __dirname+"/pages"});
-    }else{
+    let playerID = req.query.playerID
+    if (playerID == null) {
+        res.sendFile("./getplayerid.html", { root: __dirname+"/pages"});
+        return
+    }
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found) {
         res.sendFile("./index.html", { root: __dirname+"/pages"});
+    }else{
+        res.sendFile("./login.html", { root: __dirname+"/pages"});
     }
 });
 
-app.get("/loadinfo", (req, res) => {
-    let isPlayerHost=false
-    let pass = req.query.p
-    console.log(pass,password)
-    if (pass == password){
-        isPlayerHost=true
-    }
-    res.send({
-        hostName: hostName,
-        isPlayerHost: isPlayerHost,
+app.get("/getGames", (req, res) => {
+    let liveGames = [];
+    games.forEach((game) => {
+        if (game.playlistURL=="") {
+            liveGames.push(game);
+        }
     });
+    res.send(liveGames);
 });
+
+app.post("/joinGame", (req, res) => {
+    let playerID = req.query.playerID
+    let existingGame = getGameByPlayerID(playerID)
+    if (existingGame.found) {
+        existingGame.game.removePlayerFromGame(playerID)
+    }
+
+    let gameID = req.query.gameID
+
+    let gameSearch = getGameByGameID(gameID)
+    if (gameSearch.found) {
+        gameSearch.game.addPlayerToGame(playerID)
+        res.sendStatus(200);
+    }else{
+        res.sendStatus(404);
+    }
+})
+
+app.post("/leaveGame", (req, res) => {
+    let playerID = req.query.playerID
+    let existingGame = getGameByPlayerID(playerID)
+    if (existingGame.found) {
+        existingGame.game.removePlayerFromGame(playerID)
+        if (existingGame.game.isHost(playerID)){
+            games.splice(games.indexOf(existingGame.game),1);
+        }
+        res.sendStatus(200);
+    }else{
+        res.sendStatus(404);
+    }
+})
 
 app.get('/login', async (req, res) =>{
+    let playerID = req.query.playerID
     var state = myhelper.makeid(16);
+    loggingIn[state] = playerID
+
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
 
     res.redirect('https://accounts.spotify.com/authorize?' +
@@ -122,7 +151,6 @@ app.get('/callback', async (req, res) => {
 
     var code = req.query.code || null;
     var state = req.query.state || null;
-    
     if (state === null) {
         res.redirect('/#' +
             querystring.stringify({
@@ -130,15 +158,20 @@ app.get('/callback', async (req, res) => {
             }));
         return
     }
-    accessToken = await getToken(code)
+    let accessToken = await getToken(code)
     const response = await axios.get(`https://api.spotify.com/v1/me`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`
+        'Authorization': `Bearer ${accessToken}` 
       }
     });
-    hostName = response.data.display_name
-    hostid = response.data.id
-    res.redirect('/?p='+password);
+
+    let playerID = loggingIn[state]
+
+    delete loggingIn[state]
+
+    let newGame=  new game.game(playerID,response.data.id,response.data.display_name,accessToken,3)
+    games.push(newGame)
+    res.redirect(`/?playerID=${playerID}`);
 });
 
 // Endpoint to search for songs
@@ -161,91 +194,91 @@ app.get('/search', async (req, res) => {
   }
 });
 
-app.get('/update', async (req, res) => {
-    playing = false
-    if (playlistURL == '') {
-        playing=true
-        var id = req.query["playerID"];
 
-        var theirSong = []
-        playlist.forEach((song) => {
-            if (id === song.playerID) {
-                theirSong.push(song);
-            }
+app.get("/loadinfo", (req, res) => {
+    let isPlayerHost=false
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found == false){
+        res.send({
+            validGame:false
         })
+        return
     }
-    var response = {
-        isPlaying:playing,
-        playerCount:playerCount,
-        songsPerPerson:songsPerPerson,
-        count:playlist.length,
-        items:theirSong
+
+    res.send({
+        validGame:true,
+        hostName: gameSearch.game.hostName,
+        isPlayerHost: gameSearch.game.isHost(playerID),
+    });
+});
+
+app.get('/update', async (req, res) => {
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found == false){
+        var response = {
+            validGame:false
+        }
+        res.json(response);
+        return
     }
-    res.json(response);
+    res.json(gameSearch.game.update(playerID));
 });
 
 app.get('/remove', async (req, res) => {
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found == false){
+        return
+    }
+
     var id = req.query["songID"];
-    playlist.forEach((song,index) => {
-        if (id === song.id) {
-            playlist.splice(index,1)
-        }
-    })
+    gameSearch.game.removeSong(playerID,id);
     res.sendStatus(200);
 });
 
 // Will be just for admin
 app.post('/submit', async (req, res) => {
-    var playlistData = await createPlaylist()
-    if (playlist.length>0){
-        var query = ""
-        myhelper.shuffle(playlist)
-        playlist.forEach((song)=>{
-            query = query+","+song.uri
-        })
-        query = query.slice(1)
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found == false){
+        return
     }
-    await addToPlaylist(playlistData.data.id,query)
-    playlist=[]
-    playlistURL = playlistData.data.external_urls.spotify
-    res.send(playlistURL);
+
+    res.send(await gameSearch.game.submit(playerID));
 });
 
 // Will be just for admin
 app.post('/clear', async (req, res) => {
-    let pass = req.query.p
-    console.log(pass,password)
-    if (pass == password){
-        playlist =[]
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found == false){
+        return
     }
+
+    gameSearch.game.clear(playerID);
     res.sendStatus(200);
 });
 
 // Endpoint to search for songs
 app.post('/add', async (req, res) => {
-    var body = req.body;
-    var exists = false
-    playlist.forEach((song) => {
-        if (song.id === body.id) {
-            exists = true;
-            return;
-        }
-    })
-    if (getSongCountForPlayer(body.playerID) >= songsPerPerson){
-        res.send("You have already added all your songs");
-        return
-    }
-    if (exists){
-        res.send("This song is already in the playlist");
-        return
-    }else{
-        playlist.push(body);
-        res.send("Added");
-        return
-    }
- });
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
-setInterval(tick,1000);
+    if (gameSearch.found == false){
+        return
+    }
+
+    var body = req.body;
+    body.playerID = playerID
+    res.send(gameSearch.game.addSong(body));
+ });
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
