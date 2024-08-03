@@ -18,16 +18,16 @@
         </div>
         <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
             <div id="adminonly" class="row"  style="display: none">
-                <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger btn-lg align-items-center">Clear all songs in playlist</button>
-                <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary btn-lg align-items-center">Submit to spotify</button>
+                <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger align-items-center">Clear all songs</button>
+                <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary align-items-center">Submit to spotify</button>
             </div>
             <div class="row">
                 <div class="col align-items-center text-center fw-bold">
-                    Number of players
+                    Player count
                     <div id="playercount">4</div>
                 </div>
                 <div class="col align-items-center text-center fw-bold">
-                    Number of songs in playlist
+                    Song Count
                     <div id="playlistcount">4</div>
                 </div>
             </div>
@@ -39,15 +39,15 @@
                     0/0
                 </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-light">
-                    <tbody id="yoursongs" style="color: white;">
-                    <tr class="table-light d-none" id="examplesong">
-                        <th scope="row" class="yoursonglabel col-9 table-light"></th>
-                        <td class="align-middle col-1 table-light"><button onclick="remove(0)" class="btn btn-Danger">X</button></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div id="yoursongs" style="color: white;" class="d-flex flex-column">
+                <div class="songBox d-none" id="examplesong">
+                    <img src="" alt="Thumbnail" class="song-thumbnail">
+                    <div class="yoursonglabel" style="flex-grow: 1;">
+                        <div class="songname fw-bold">Song Name</div>
+                        <i><small class="songartist">Artist Name</small></i>
+                    </div>
+                    <div><button onclick="remove(0)" class="btn btn-Danger">X</button></div>
+                </div>
             </div>
         </div>
         <div class="row container align-items-center text-center p-1 m-1">
@@ -75,7 +75,15 @@
                 </div>
                 <div class="spinner-border text-light mt-5" id="searchloader" style="display: none;" role="status">
                 </div>
-                <ul class="list-group" id="suggestions"></ul>
+                <div class="songBox clicksong d-none" id="exampleaddsong">
+                    <img src="" alt="Thumbnail" class="song-thumbnail">
+                    <div class="yoursonglabel" style="flex-grow: 1;">
+                        <div class="songname fw-bold">Song Name</div>
+                        <i><small class="songartist">Artist Name</small></i>
+                    </div>
+                </div>
+                <div id="suggestions" style="color: white;" class="d-flex flex-column">
+                </div>
             </div>
             <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -210,6 +218,9 @@
         const input = document.getElementById('songinput');
         const searchButton = document.getElementById('searchbutton');
         const suggestions = document.getElementById('suggestions');
+
+        const exampleAddSong = document.getElementById("exampleaddsong")
+
         if (!searching){
             $("#searchloader").show();
             input.disabled = true;
@@ -221,17 +232,18 @@
             const songs = await response.json();
             suggestions.innerHTML = '';
             songs.forEach(song => {
-                const li = document.createElement('li');
-                li.classList.add("list-group-item");
-                li.classList.add("list-group-item-action");
-                li.classList.add("list-group-item-primary");
-                li.textContent = `${song.name} by ${song.artists.map(artist => artist.name).join(', ')}`;
-                li.addEventListener('click', () => {
+                let newAddSong = exampleAddSong.cloneNode(true)
+                newAddSong.id = song.id
+                newAddSong.getElementsByTagName("img")[0].src = song.album.images[0].url
+                newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songname")[0].innerHTML = song.name
+                newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songartist")[0].innerHTML = song.artists.map(artist => artist.name).join(', ')
+                newAddSong.classList.remove("d-none");
+                newAddSong.addEventListener('click', () => {
                     suggestions.innerHTML = '';
                     input.value='';
                     addSong(song);
                 });
-                suggestions.appendChild(li);
+                suggestions.appendChild(newAddSong);
             });
             $("#searchloader").hide();
             input.disabled = false;
@@ -302,7 +314,9 @@
             if (currentsongids.includes(song.id)){
                 let newsong = examplesong.cloneNode(true)
                 newsong.id = song.id
-                newsong.getElementsByClassName("yoursonglabel")[0].innerHTML = song.name +" by "+ song.artists.map(artist => artist.name).join(', ')
+                newsong.getElementsByTagName("img")[0].src = song.album.images[0].url
+                newsong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songname")[0].innerHTML = song.name
+                newsong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songartist")[0].innerHTML = song.artists.map(artist => artist.name).join(', ')
                 newsong.getElementsByTagName("button")[0].setAttribute( "onClick", "javascript: remove(this.parentNode.parentNode.id)");
                 newsong.classList.add("yoursong");
                 newsong.classList.remove("d-none");
