@@ -160,7 +160,7 @@ class game{
     }
 
     async tick(){
-        let ids = []
+        let ids = this.players
         this.playlist.forEach((song) => {
             if (!ids.includes(song.playerID)){
                 ids.push(song.playerID)

@@ -17,15 +17,19 @@
             <div class="fw-bold" >
                 Or join an existing game
             </div>
-            <div class="table-responsive">
-                <table class="table table-light">
-                    <tbody id="joingames" style="color: white;">
-                    <tr class="table-light d-none" id="exampleGame">
-                        <th scope="row" class="gamelabel col-9 table-light">Henry's game</th>
-                        <td class="align-middle col-1 table-light"><button onclick="join(0)" class="btn btn-Primary">Join</button></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div class="highlightBox mt-2 pt-2 pb-2">
+                <div id="nogames" class="">
+                    <span id="loginSpinner" class="spinner-border spinner-border-lg" aria-hidden="true"></span>
+                    <br>
+                    No games found so far
+                </div>
+                <div id="joingames" style="color: white;" class="d-flex flex-column">
+                    <div class="songBox d-none" id="exampleGame">
+                        <div class="gamelabel fw-bold" style="flex-grow: 1;">
+                        </div>
+                        <div><button onclick="join(0)" class="btn btn-Primary">Join</button></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -128,6 +132,12 @@
     async function checkForGames(){
         const response = await fetch(`/getGames`)
         const games = await response.json()
+
+        if (games.length > 0){
+            document.getElementById("nogames").classList.add("d-none")
+        }else{
+            document.getElementById("nogames").classList.remove("d-none")
+        }
 
         let exampleGame = document.getElementById("exampleGame")
         var gameElements = document.getElementsByClassName("games");

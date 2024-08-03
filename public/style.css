@@ -1,5 +1,29 @@
 .highlightBox{
-    background-color: #535353;
+    background-color: #2A2A2A;
     border-radius: 5px;
     box-shadow: 5px;
+}
+
+.songBox {
+    border-radius: 15px;
+    padding: 10px;
+    margin: 2px;
+    display: flex;
+    align-items: center;
+    background-color: #555555;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.clicksong:hover,.clicksong:active ,.clicksong:focus{
+    background-color: #d3dad2;
+    color: black;
+    cursor: pointer;
+}
+
+.song-thumbnail {
+    width: 5vh;
+    height: 5vh;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-right: 15px;
 }
