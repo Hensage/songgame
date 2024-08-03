@@ -3,12 +3,15 @@ const myhelper = require('./helper');
 const axios = require('axios');
 
 class game{
-    constructor(hostid,hostName,accessToken,songsPerPerson){
+    constructor(hostPlayerID,hostid,hostName,accessToken,songsPerPerson){
         this.playlist = [];
+        this.players = [];
         this.playerCount = 0;
         this.playlistURL = '';
 
         this.gameid = myhelper.makeid(16);
+        this.hostPlayerID = hostPlayerID;
+        this.addPlayerToGame(hostPlayerID);
         this.hostid=hostid;
         this.hostName=hostName;
         this.accessToken=accessToken;
@@ -42,6 +45,32 @@ class game{
             });
     }
 
+    isPlayerInGame(playerID){
+        return this.players.includes(playerID);
+    }
+
+    addPlayerToGame(playerID){
+        if (this.isPlayerInGame(playerID)) {
+            return "Already in game";
+        }else{
+            this.players.push(playerID);
+            return "Added";
+        }
+    }
+
+    removePlayerFromGame(playerID){
+        if (!this.isPlayerInGame(playerID)) {
+            return "Not in game";
+        }else{
+            this.players.splice(this.players.indexOf(playerID),1);
+            return "Removed";
+        }
+    }
+
+    isHost(playerID){
+        return playerID === this.hostPlayerID
+    }
+
     getSongCountForPlayer(playerID){
         var count =0
         this.playlist.forEach((song) => {
@@ -71,9 +100,9 @@ class game{
         }
     }
 
-    removeSong(oldSong){
+    removeSong(playerID,oldSong){
         this.playlist.forEach((song,index) => {
-            if (oldSong === song.id) {
+            if (oldSong === song.id && song.playerID === playerID) {
                 this.playlist.splice(index,1)
             }
         })
@@ -101,16 +130,9 @@ class game{
         }
     }
 
-    authAdmin(password){
-        if (password == this.password){
-            return true
-        }
-        return false
-    }
-
-    async submit(password){
-        if (!this.authAdmin(password)){
-            return "Incorrect password"
+    async submit(playerID){
+        if (!this.isHost(playerID)){
+            return "not host"
         }
 
         var playlistData = await this.createPlaylist()
@@ -129,9 +151,9 @@ class game{
         return this.playlistURL;
     }
 
-    clear(password){
-        if (!this.authAdmin(password)){
-            return "Incorrect password"
+    clear(playerID){
+        if (!this.isHost(playerID)){
+            return "not host"
         }
 
         this.playlist=[];

@@ -98,13 +98,31 @@
 </html>
 
 <script>
+    var playerID = localStorage.getItem("playerID");
+    if (playerID == null){
+        playerID = uuidv4();
+        localStorage.setItem("playerID", playerID)
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const paramPlayerID = urlParams.get('playerID')
+    if (paramPlayerID != playerID){
+        window.location = `/?playerID=${playerID}`;
+    }
+
     let loging = false
     async function login(){
         loging = true
         document.getElementById("loginSpinner").classList.remove("d-none");
         document.getElementById("login").disabled=true
-        window.location = "/login";
+        window.location = `/login?playerID=${playerID}`;
         setTimeout(() => {loging = false}, 20000)
+    }
+
+    async function joinGame(gameID){
+        const response = await fetch(`/joinGame?playerID=${playerID}&gameID=${gameID}`,{method: "POST"})
+        window.location = `/?playerID=${playerID}`;
     }
 
     async function checkForGames(){
@@ -129,7 +147,7 @@
             let newgame = exampleGame.cloneNode(true)
             newgame.id = game.gameid
             newgame.getElementsByClassName("gamelabel")[0].innerHTML = game.hostName+"'s Game"
-            newgame.getElementsByTagName("button")[0].setAttribute( "onClick", `javascript: window.location = "/?gameid=`+game.gameid+`";`);
+            newgame.getElementsByTagName("button")[0].setAttribute( "onClick", `javascript: joinGame("${game.gameid}")`);
             newgame.classList.add("games");
             newgame.classList.remove("d-none");
             document.getElementById("joingames").appendChild(newgame)

@@ -21,6 +21,8 @@ var songsPerPerson = 5;
 
 var games = [];
 
+var loggingIn = {}
+
 var redirect_uri = 'http://192.168.1.70:3000/callback';
 
 const client_id = config.get('client_id');
@@ -44,7 +46,7 @@ async function getToken(code){
     return accessToken
 }
 
-function getGame(gameid){
+function getGameByGameID(gameid){
     let currentGame;
     let found = false;
     games.forEach((game) => {
@@ -57,27 +59,82 @@ function getGame(gameid){
     return {game:currentGame,found:found};
 }
 
-app.get("/", (req, res) => {
-    let currentGame = req.query.gameid
-    let foundGame = false
+function getGameByPlayerID(playerID){
+    let currentGame;
+    let found = false;
     games.forEach((game) => {
-        if (game.gameid == currentGame){
-            res.sendFile("./index.html", { root: __dirname+"/pages"});
-            foundGame =true
+        if (game.isPlayerInGame(playerID)){
+            currentGame= game
+            found = true
             return
         }
     })
-    if (!foundGame) {
+    return {game:currentGame,found:found};
+}
+
+
+app.get("/", (req, res) => {
+    let playerID = req.query.playerID
+    if (playerID == null) {
+        res.sendFile("./getplayerid.html", { root: __dirname+"/pages"});
+        return
+    }
+    let gameSearch = getGameByPlayerID(playerID)
+
+    if (gameSearch.found) {
+        res.sendFile("./index.html", { root: __dirname+"/pages"});
+    }else{
         res.sendFile("./login.html", { root: __dirname+"/pages"});
     }
 });
 
 app.get("/getGames", (req, res) => {
-    res.send(games);
+    let liveGames = [];
+    games.forEach((game) => {
+        if (game.playlistURL=="") {
+            liveGames.push(game);
+        }
+    });
+    res.send(liveGames);
 });
 
+app.post("/joinGame", (req, res) => {
+    let playerID = req.query.playerID
+    let existingGame = getGameByPlayerID(playerID)
+    if (existingGame.found) {
+        existingGame.game.removePlayerFromGame(playerID)
+    }
+
+    let gameID = req.query.gameID
+
+    let gameSearch = getGameByGameID(gameID)
+    if (gameSearch.found) {
+        gameSearch.game.addPlayerToGame(playerID)
+        res.sendStatus(200);
+    }else{
+        res.sendStatus(404);
+    }
+})
+
+app.post("/leaveGame", (req, res) => {
+    let playerID = req.query.playerID
+    let existingGame = getGameByPlayerID(playerID)
+    if (existingGame.found) {
+        existingGame.game.removePlayerFromGame(playerID)
+        if (existingGame.game.isHost(playerID)){
+            games.splice(games.indexOf(existingGame.game),1);
+        }
+        res.sendStatus(200);
+    }else{
+        res.sendStatus(404);
+    }
+})
+
 app.get('/login', async (req, res) =>{
+    let playerID = req.query.playerID
     var state = myhelper.makeid(16);
+    loggingIn[state] = playerID
+
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
 
     res.redirect('https://accounts.spotify.com/authorize?' +
@@ -94,7 +151,6 @@ app.get('/callback', async (req, res) => {
 
     var code = req.query.code || null;
     var state = req.query.state || null;
-    
     if (state === null) {
         res.redirect('/#' +
             querystring.stringify({
@@ -105,12 +161,17 @@ app.get('/callback', async (req, res) => {
     let accessToken = await getToken(code)
     const response = await axios.get(`https://api.spotify.com/v1/me`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`
+        'Authorization': `Bearer ${accessToken}` 
       }
     });
-    let newGame=  new game.game(response.data.id,response.data.display_name,accessToken,3)
+
+    let playerID = loggingIn[state]
+
+    delete loggingIn[state]
+
+    let newGame=  new game.game(playerID,response.data.id,response.data.display_name,accessToken,3)
     games.push(newGame)
-    res.redirect('/?gameid='+newGame.gameid+'&p='+newGame.password);
+    res.redirect(`/?playerID=${playerID}`);
 });
 
 // Endpoint to search for songs
@@ -136,89 +197,86 @@ app.get('/search', async (req, res) => {
 
 app.get("/loadinfo", (req, res) => {
     let isPlayerHost=false
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
     if (gameSearch.found == false){
+        res.send({
+            validGame:false
+        })
         return
     }
 
-    let pass = req.query.p
-
-    if (pass == gameSearch.game.password){
-        isPlayerHost=true
-    }
     res.send({
+        validGame:true,
         hostName: gameSearch.game.hostName,
-        isPlayerHost: isPlayerHost,
+        isPlayerHost: gameSearch.game.isHost(playerID),
     });
 });
 
 app.get('/update', async (req, res) => {
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
-    if (!gameSearch.found){
+    if (gameSearch.found == false){
         var response = {
             validGame:false
         }
         res.json(response);
         return
     }
-    let playerID = req.query.playerID
     res.json(gameSearch.game.update(playerID));
 });
 
 app.get('/remove', async (req, res) => {
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
     if (gameSearch.found == false){
         return
     }
 
     var id = req.query["songID"];
-    gameSearch.game.removeSong(id);
+    gameSearch.game.removeSong(playerID,id);
     res.sendStatus(200);
 });
 
 // Will be just for admin
 app.post('/submit', async (req, res) => {
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
     if (gameSearch.found == false){
         return
     }
 
-    let pass = req.query.p
-    res.send(await gameSearch.game.submit(pass));
+    res.send(await gameSearch.game.submit(playerID));
 });
 
 // Will be just for admin
 app.post('/clear', async (req, res) => {
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
     if (gameSearch.found == false){
         return
     }
 
-    let pass = req.query.p
-    gameSearch.game.clear(pass);
+    gameSearch.game.clear(playerID);
     res.sendStatus(200);
 });
 
 // Endpoint to search for songs
 app.post('/add', async (req, res) => {
-    let gameid = req.query.gameid
-    let gameSearch = getGame(gameid);
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
 
     if (gameSearch.found == false){
         return
     }
 
     var body = req.body;
+    body.playerID = playerID
     res.send(gameSearch.game.addSong(body));
  });
 

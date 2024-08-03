@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="custom.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    </head>
+    <body>
+        <div class="container vh-100 d-flex flex-column align-items-center p-2">
+            <div class="row container d-flex align-items-center text-center p-1 m-1 highlightBox">
+                Loading
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+    function uuidv4() {
+        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+            (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+        );
+    }
+
+    var playerID = localStorage.getItem("playerID");
+    if (playerID == null){
+        playerID = uuidv4();
+        localStorage.setItem("playerID", playerID)
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const paramPlayerID = urlParams.get('playerID')
+    if (paramPlayerID != playerID){
+        window.location = `/?playerID=${playerID}`;
+    }
+</script>
