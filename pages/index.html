@@ -23,18 +23,18 @@
             <div class="row">
                 <div class="col align-items-center text-center fw-bold">
                     Player count
-                    <div id="playercount">4</div>
+                    <div id="playercount" class="faint">4</div>
                 </div>
                 <div class="col align-items-center text-center fw-bold">
                     Song Count
-                    <div id="playlistcount">4</div>
+                    <div id="playlistcount" class="faint">4</div>
                 </div>
             </div>
         </div>
         <div class="row container align-items-center text-center p-1 m-1 highlightBox">
             <div class="fw-bold" >
                 Your songs
-                <div class="fs-6 fw-normal fst-italic" id="yoursongcount">
+                <div class="fs-6 fw-normal faint fw-light" id="yoursongcount">
                     0/0
                 </div>
             </div>
@@ -43,7 +43,7 @@
                     <img src="" alt="Thumbnail" class="song-thumbnail">
                     <div class="yoursonglabel" style="flex-grow: 1;">
                         <div class="songname fw-bold">Song Name</div>
-                        <i><small class="songartist">Artist Name</small></i>
+                        <small class="songartist faint fw-light">Artist Name</small>
                     </div>
                     <div><button onclick="remove(0)" class="btn btn-Danger">X</button></div>
                 </div>
@@ -78,7 +78,7 @@
                     <img src="" alt="Thumbnail" class="song-thumbnail">
                     <div class="yoursonglabel" style="flex-grow: 1;">
                         <div class="songname fw-bold">Song Name</div>
-                        <i><small class="songartist">Artist Name</small></i>
+                        <small class="songartist">Artist Name</small>
                     </div>
                 </div>
                 <div id="suggestions" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
@@ -240,22 +240,31 @@
             searching=true
             const query = input.value;
             const response = await fetch(`/search?playerID=${playerID}&query=${query}`);
-            const songs = await response.json();
-            suggestions.innerHTML = '';
-            songs.forEach(song => {
-                let newAddSong = exampleAddSong.cloneNode(true)
-                newAddSong.id = song.id
-                newAddSong.getElementsByTagName("img")[0].src = song.album.images[0].url
-                newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songname")[0].innerHTML = song.name
-                newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songartist")[0].innerHTML = song.artists.map(artist => artist.name).join(', ')
-                newAddSong.classList.remove("d-none");
-                newAddSong.addEventListener('click', () => {
-                    suggestions.innerHTML = '';
-                    input.value='';
-                    addSong(song);
+            if (response.status==200){
+                const songs = await response.json();
+                suggestions.innerHTML = '';
+                songs.forEach(song => {
+                    let newAddSong = exampleAddSong.cloneNode(true)
+                    newAddSong.id = song.id
+                    newAddSong.getElementsByTagName("img")[0].src = song.album.images[0].url
+                    newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songname")[0].innerHTML = song.name
+                    newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songartist")[0].innerHTML = song.artists.map(artist => artist.name).join(', ')
+                    newAddSong.classList.remove("d-none");
+                    newAddSong.addEventListener('click', () => {
+                        suggestions.innerHTML = '';
+                        input.value='';
+                        addSong(song);
+                    });
+                    suggestions.appendChild(newAddSong);
                 });
-                suggestions.appendChild(newAddSong);
-            });
+            }else{
+                const errorMsg = await response.text();
+                $('#addModalError').text(errorMsg);
+                $('#addModalError').show();
+                setTimeout(() => {
+                    $('#addModalError').hide();
+                },1000)
+            }
             $("#searchloader").hide();
             input.disabled = false;
             searchButton.disabled = false;

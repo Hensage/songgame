@@ -1,3 +1,5 @@
+@font-face { font-family: circular; src: url('circular-std-medium-500.ttf'); }
+
 .highlightBox{
     background-color: #2A2A2A;
     border-radius: 5px;
@@ -12,6 +14,9 @@
     align-items: center;
     background-color: #555555;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.faint{
+    color: #bbbbbb;
 }
 
 .clicksong:hover,.clicksong:active ,.clicksong:focus{

@@ -190,6 +190,10 @@ app.get('/callback', async (req, res) => {
 // Endpoint to search for songs
 app.get('/search', async (req, res) => {
     const { query } = req.query;
+    if (query.length<1){
+        res.status(405).send('No query provided');
+        return
+    }
     try {
         const response = await axios.get(`https://api.spotify.com/v1/search`, {
             headers: {
