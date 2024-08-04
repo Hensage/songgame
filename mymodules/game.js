@@ -8,6 +8,7 @@ class game{
         this.players = [];
         this.playerCount = 0;
         this.playlistURL = '';
+        this.expiresAt = Date.now() + 1000*60*60;
 
         this.gameid = myhelper.makeid(16);
         this.hostPlayerID = hostPlayerID;
@@ -166,6 +167,9 @@ class game{
                 ids.push(song.playerID)
             }
         })
+        if (!ids.includes(this.hostPlayerID)){
+            ids.push(this.hostPlayerID);
+        }
         this.playerCount = ids.length
     }
 }

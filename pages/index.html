@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
-            <div id="adminonly" class="row"  style="display: none">
+            <div class="adminonly flexElement" class="row d-none">
                 <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger align-items-center">Clear all songs</button>
                 <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary align-items-center">Submit to spotify</button>
             </div>
@@ -136,12 +136,14 @@
                 <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div id="leaveText" class="modal-body align-items-center text-center">
-                    Are you sure you want to leave the game?
-                    If you are the Host, this will close the game.
+                    <p>Are you sure you want to leave the game?</p>
+                    <p>You can rejoin the game at any time.</p>
+                    <p class="adminonly d-none">Or as host, you can fully close the game for everyone as well</p>
                 </div>
                 <div class="modal-footer">
                 <button type="button" class="btn btn-Primary" data-bs-dismiss="modal">Stay</button>
                 <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="leaveGame()">Leave</button>
+                <button type="button" class="btn btn-Danger adminonly d-none" data-bs-dismiss="modal" onclick="closeGame()">Leave & close</button>
                 </div>
             </div>
             </div>
@@ -158,7 +160,7 @@
                     The host has submitted the playlist and now has the spotify link. The game can now begin! You can now leave the game.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="leaveGame()">Leave</button>
+                    <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="closeGame()">Close</button>
                     <button type="button" id="spotLink" class="btn btn-primary d-none" onclick="window.open(playlistLink, '_blank');">Link to Spotify</button>
                 </div>
             </div>
@@ -201,7 +203,13 @@
         
         document.getElementById("hostname").innerHTML = "The host is " + info.hostName
         if (info.isPlayerHost==true){
-            document.getElementById("adminonly").classList.add("d-flex")
+            let adminOnly = document.getElementsByClassName("adminonly")
+            Array.from(adminOnly).forEach((element) => {
+                element.classList.remove("d-none")
+                if (element.classList.contains("flexElement")){
+                    element.classList.add("d-flex")
+                }
+            })
         }
 
         update()
@@ -351,6 +359,11 @@
 
     async function leaveGame(){
         var response = await fetch(`/leaveGame?playerID=${playerID}`,{method: "POST"});
+        window.location = `/?playerID=${playerID}`;
+    }
+
+    async function closeGame(){
+        var response = await fetch(`/closeGame?playerID=${playerID}`,{method: "POST"});
         window.location = `/?playerID=${playerID}`;
     }
 
