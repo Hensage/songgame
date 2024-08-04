@@ -89,13 +89,17 @@ app.get("/", (req, res) => {
 });
 
 app.get("/getGames", (req, res) => {
-    let liveGames = [];
+    let livegames = {otherGames:[]};
     games.forEach((game) => {
         if (game.playlistURL=="") {
-            liveGames.push(game);
+            if (game.isHost(req.query.playerID)) {
+                livegames.yourGame = game;
+            }else{
+                livegames.otherGames.push(game);
+            }
         }
     });
-    res.send(liveGames);
+    res.send(livegames);
 });
 
 app.post("/joinGame", (req, res) => {
@@ -121,9 +125,17 @@ app.post("/leaveGame", (req, res) => {
     let existingGame = getGameByPlayerID(playerID)
     if (existingGame.found) {
         existingGame.game.removePlayerFromGame(playerID)
-        if (existingGame.game.isHost(playerID)){
-            games.splice(games.indexOf(existingGame.game),1);
-        }
+        res.sendStatus(200);
+    }else{
+        res.sendStatus(404);
+    }
+})
+
+app.post("/closeGame", (req, res) => {
+    let playerID = req.query.playerID
+    let existingGame = getGameByPlayerID(playerID)
+    if (existingGame.found && existingGame.game.isHost(playerID)) {
+        games.splice(games.indexOf(existingGame.game),1)
         res.sendStatus(200);
     }else{
         res.sendStatus(404);
@@ -280,6 +292,18 @@ app.post('/add', async (req, res) => {
     body.playerID = playerID
     res.send(gameSearch.game.addSong(body));
  });
+
+
+ function tick(){
+    games.forEach((game) => {
+        console.log(game.expiresAt-Date.now())
+        if (game.expiresAt < Date.now()){
+            games.splice(games.indexOf(game),1)
+        }
+    });
+}
+
+setInterval(tick,30000);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
