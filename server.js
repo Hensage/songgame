@@ -296,7 +296,6 @@ app.post('/add', async (req, res) => {
 
  function tick(){
     games.forEach((game) => {
-        console.log(game.expiresAt-Date.now())
         if (game.expiresAt < Date.now()){
             games.splice(games.indexOf(game),1)
         }
