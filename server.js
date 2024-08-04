@@ -132,8 +132,9 @@ app.post("/leaveGame", (req, res) => {
 
 app.get('/login', async (req, res) =>{
     let playerID = req.query.playerID
+    let songCount = req.query.songCount
     var state = myhelper.makeid(16);
-    loggingIn[state] = playerID
+    loggingIn[state] = {playerID:playerID,songCount:songCount}
 
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
 
@@ -165,33 +166,33 @@ app.get('/callback', async (req, res) => {
       }
     });
 
-    let playerID = loggingIn[state]
+    let gameInfo = loggingIn[state]
 
     delete loggingIn[state]
 
-    let newGame=  new game.game(playerID,response.data.id,response.data.display_name,accessToken,3)
+    let newGame=  new game.game(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount)
     games.push(newGame)
-    res.redirect(`/?playerID=${playerID}`);
+    res.redirect(`/?playerID=${gameInfo.playerID}`);
 });
 
 // Endpoint to search for songs
 app.get('/search', async (req, res) => {
-  const { query } = req.query;
-  try {
-    const response = await axios.get(`https://api.spotify.com/v1/search`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      },
-      params: {
-        q: query,
-        type: 'track',
-        limit: 5
-      }
-    });
-    res.json(response.data.tracks.items);
-  } catch (error) {
-    res.status(500).send('Error fetching data from Spotify');
-  }
+    const { query } = req.query;
+    try {
+        const response = await axios.get(`https://api.spotify.com/v1/search`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            },
+            params: {
+                q: query,
+                type: 'track',
+                limit: 5
+            }
+        });
+        res.json(response.data.tracks.items);
+    } catch (error) {
+        res.status(500).send('Error fetching data from Spotify');
+    }
 });
 
 

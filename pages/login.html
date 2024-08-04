@@ -23,7 +23,7 @@
                     <br>
                     No games found so far
                 </div>
-                <div id="joingames" style="color: white;" class="d-flex flex-column">
+                <div id="joingames" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
                     <div class="songBox d-none" id="exampleGame">
                         <div class="gamelabel fw-bold" style="flex-grow: 1;">
                         </div>
@@ -48,31 +48,31 @@
                     <div>
                         Number of songs per person     
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1">
-                        <label class="form-check-label" for="inlineRadio1">1</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="2">
-                        <label class="form-check-label" for="inlineRadio2">2</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="3" checked>
-                        <label class="form-check-label" for="inlineRadio3">3</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio4" value="4">
-                          <label class="form-check-label" for="inlineRadio1">4</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio5" value="5">
-                          <label class="form-check-label" for="inlineRadio2">5</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio6" value="6">
-                          <label class="form-check-label" for="inlineRadio3">6</label>
-                        </div>
+                    <div id="songCount" class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="songcount" id="songcount1" value="1">
+                        <label class="form-check-label" for="songcount1">1</label>
                     </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="songcount" id="songcount2" value="2">
+                        <label class="form-check-label" for="songcount2">2</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="songcount" id="songcount3" value="3" checked>
+                        <label class="form-check-label" for="songcount3">3</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="songcount" id="songcount4" value="4">
+                        <label class="form-check-label" for="songcount4">4</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="songcount" id="songcount5" value="5">
+                        <label class="form-check-label" for="songcount5">5</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="songcount" id="songcount6" value="6">
+                        <label class="form-check-label" for="songcount6">6</label>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">Back</button>
@@ -117,14 +117,17 @@
 
     let loging = false
     async function login(){
+        songCount = document.querySelector('input[name="songcount"]:checked').value
+        console.log(songCount)
         loging = true
         document.getElementById("loginSpinner").classList.remove("d-none");
         document.getElementById("login").disabled=true
-        window.location = `/login?playerID=${playerID}`;
+        window.location = `/login?playerID=${playerID}&songCount=${songCount}`;
         setTimeout(() => {loging = false}, 20000)
     }
 
     async function joinGame(gameID){
+
         const response = await fetch(`/joinGame?playerID=${playerID}&gameID=${gameID}`,{method: "POST"})
         window.location = `/?playerID=${playerID}`;
     }

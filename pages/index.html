@@ -39,7 +39,7 @@
                     0/0
                 </div>
             </div>
-            <div id="yoursongs" style="color: white;" class="d-flex flex-column">
+            <div id="yoursongs" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
                 <div class="songBox d-none" id="examplesong">
                     <img src="" alt="Thumbnail" class="song-thumbnail">
                     <div class="yoursonglabel" style="flex-grow: 1;">
@@ -56,12 +56,12 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
             <h1 class="modal-title fs-5" id="addModalLabel">Add new song</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button id="addModalClose2" type="button" class="btn-close" style="background-color: white;" onclick="closeAddModal()" aria-label="Close"></button>
             </div>
             <div class="modal-body align-items-center text-center">
                 <div class="alert alert-warning" style="display: none;" role="alert" id="addModalError">Song already exists</div>
@@ -82,23 +82,23 @@
                         <i><small class="songartist">Artist Name</small></i>
                     </div>
                 </div>
-                <div id="suggestions" style="color: white;" class="d-flex flex-column">
+                <div id="suggestions" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
                 </div>
             </div>
             <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button id="addModalClose" type="button" class="btn btn-danger" onclick="closeAddModal()">Close</button>
             </div>
         </div>
         </div>
     </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+        <div class="modal fade" id="submitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
             <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                 <h1 class="modal-title fs-5" id="submitModalLabel">Submit to Spotify?</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body align-items-center text-center">
                     This will stop all other players from adding songs, and the game will begin
@@ -112,12 +112,12 @@
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="clearModal" tabindex="-1" aria-labelledby="clearModalLabel" aria-hidden="true">
+        <div class="modal fade" id="clearModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="clearModalLabel" aria-hidden="true">
             <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                 <h1 class="modal-title fs-5" id="clearModalLabel">Clear all songs?</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
@@ -128,12 +128,12 @@
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="leaveModal" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+        <div class="modal fade" id="leaveModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
             <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                 <h1 class="modal-title fs-5" id="leaveModalLabel">Leave Game?</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div id="leaveText" class="modal-body align-items-center text-center">
                     Are you sure you want to leave the game?
@@ -218,13 +218,17 @@
         const input = document.getElementById('songinput');
         const searchButton = document.getElementById('searchbutton');
         const suggestions = document.getElementById('suggestions');
-
+        const closeButton = document.getElementById("addModalClose")
+        const closeButton2 = document.getElementById("addModalClose2")
+        
         const exampleAddSong = document.getElementById("exampleaddsong")
 
         if (!searching){
             $("#searchloader").show();
             input.disabled = true;
             searchButton.disabled = true;
+            closeButton.disabled = true;
+            closeButton2.disabled=true;
             suggestions.innerHTML = '';
             searching=true
             const query = input.value;
@@ -248,6 +252,8 @@
             $("#searchloader").hide();
             input.disabled = false;
             searchButton.disabled = false;
+            closeButton.disabled = false;
+            closeButton2.disabled=false;
             searching=false
         }
     }
@@ -346,6 +352,12 @@
     async function leaveGame(){
         var response = await fetch(`/leaveGame?playerID=${playerID}`,{method: "POST"});
         window.location = `/?playerID=${playerID}`;
+    }
+
+    function closeAddModal(){
+        if (!searching){
+            $('#addModal').modal('hide');
+        }
     }
 
     function uuidv4() {
