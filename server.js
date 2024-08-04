@@ -177,22 +177,22 @@ app.get('/callback', async (req, res) => {
 
 // Endpoint to search for songs
 app.get('/search', async (req, res) => {
-  const { query } = req.query;
-  try {
-    const response = await axios.get(`https://api.spotify.com/v1/search`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      },
-      params: {
-        q: query,
-        type: 'track',
-        limit: 5
-      }
-    });
-    res.json(response.data.tracks.items);
-  } catch (error) {
-    res.status(500).send('Error fetching data from Spotify');
-  }
+    const { query } = req.query;
+    try {
+        const response = await axios.get(`https://api.spotify.com/v1/search`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            },
+            params: {
+                q: query,
+                type: 'track',
+                limit: 5
+            }
+        });
+        res.json(response.data.tracks.items);
+    } catch (error) {
+        res.status(500).send('Error fetching data from Spotify');
+    }
 });
 
 
