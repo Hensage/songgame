@@ -23,7 +23,8 @@ var games = [];
 
 var loggingIn = {}
 
-var redirect_uri = 'http://192.168.1.70:3000/callback';
+var redirect_uri = 'https://songgame.fly.dev/callback';
+//var redirect_uri = 'http://192.168.1.163:3000/callback';
 
 const client_id = config.get('client_id');
 const client_secret = config.get('client_secret');
@@ -195,6 +196,7 @@ app.get('/search', async (req, res) => {
         return
     }
     try {
+        console.log("searching")
         const response = await axios.get(`https://api.spotify.com/v1/search`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -213,7 +215,6 @@ app.get('/search', async (req, res) => {
 
 
 app.get("/loadinfo", (req, res) => {
-    let isPlayerHost=false
     let playerID = req.query.playerID
     let gameSearch = getGameByPlayerID(playerID)
 

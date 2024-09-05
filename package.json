@@ -23,5 +23,8 @@
     "bootstrap": "^5.3.3",
     "config": "^3.3.12",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.5.8"
   }
 }

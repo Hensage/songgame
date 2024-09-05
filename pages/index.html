@@ -16,7 +16,7 @@
             </div>
         </div>
         <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
-            <div class="adminonly flexElement" class="row d-none">
+            <div class="adminonly flexElement row d-none">
                 <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger align-items-center">Clear all songs</button>
                 <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary align-items-center">Submit to spotify</button>
             </div>
@@ -194,7 +194,7 @@
     
         infoRequest = await fetch(`/loadinfo?playerID=${playerID}`);
         info = await infoRequest.json();
-
+        
         if (!info.validGame) {
             window.location = `/?playerID=${playerID}`;
             return
