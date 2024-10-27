@@ -25,6 +25,11 @@
                     Player count
                     <div id="playercount" class="faint">4</div>
                 </div>
+                <div class="col align-items-center justify-content-center d-flex">
+                    <button class="btn btn-Danger align-items-center" data-bs-toggle="modal" data-bs-target="#countModal">
+                        <img style="height: 25px" src="expand.svg"/>
+                    </button>
+                </div>
                 <div class="col align-items-center text-center fw-bold">
                     Song Count
                     <div id="playlistcount" class="faint">4</div>
@@ -50,7 +55,7 @@
             </div>
         </div>
         <div class="row container align-items-center text-center p-1 m-1">
-            <button class="btn btn-primary btn-lg align-items-center" data-bs-toggle="modal" data-bs-target="#addModal">Add new song</button>
+            <button class="btn btn-primary btn-lg align-items-center" id="addSongButton" data-bs-toggle="modal" data-bs-target="#addModal">Add new song</button>
         </div>
     </div>
 
@@ -68,7 +73,7 @@
                     <input type="text" class="form-control" id="songinput" style="background-color: white;" placeholder="Song title" autocomplete="off">
                     <div class="input-group-append">
                         <button id="searchbutton" type="button" onclick="searchSongs()" class="btn btn-primary">
-                            <img style="height: 25px" src="magnifying-glass.svg"/>
+                            <img style="height: 25px" src="search.svg"/>
                         </button>
                     </div>
                 </div>
@@ -149,6 +154,38 @@
         </div>
         
         <!-- Modal -->
+        <div class="modal fade" id="countModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="countModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="leaveModalLabel">Player song counts</h1>
+                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="countBody modal-body align-items-center text-center">
+                    <div class="row countRow" id="countRow0">
+                        <div class="countIcon col-2 d-flex align-items-center text-danger">
+                            <div class="image-container">
+                                <img style="width:50px;clip-path: circle(34%);" class="bg-danger" src="track.svg">
+                            </div>
+                            <span class="ml-2 countText">0</span>
+                        </div>
+                        <div class="countBarCol col-9 d-flex align-items-center">
+                            <div class="progress w-100" style="background-color: #121212;height:25px">
+                                <div id="countBar0" class="progress-bar bg-primary" style="width: 50%">
+                                    <span class="progressText float-right pr-2 text-black" style="font-size: 1.2rem;" id="countNumber0">50%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
             <div class="modal-content">
@@ -209,6 +246,17 @@
                     element.classList.add("d-flex")
                 }
             })
+        }
+
+        const zeroRow = document.getElementById(`countRow0`);
+        for (let i = 1; i <= info.songsPerPerson; i++) {
+            let newRow = zeroRow.cloneNode(true)
+            newRow.id = "countRow" + i;
+            newRow.getElementsByClassName("countIcon")[0].getElementsByClassName("countText")[0].innerHTML = i;
+            let newBar = newRow.getElementsByClassName("countBarCol")[0].getElementsByClassName("progress")[0]
+            newBar.getElementsByClassName("progress-bar")[0].id = "countBar" + i;
+            newBar.getElementsByClassName("progress-bar")[0].getElementsByClassName("progressText")[0].id="countNumber"+i;
+            document.getElementsByClassName("countBody")[0].appendChild(newRow);
         }
 
         update()
@@ -345,6 +393,17 @@
                 document.getElementById("yoursongs").appendChild(newsong)
             }
         })
+        console.log(body.countCounts)
+        body.countCounts.forEach((count,index) => {
+            document.getElementById("countBar"+index).style.width = (count/body.playerCount)*100+"%"
+            document.getElementById("countNumber"+index).innerHTML = count
+        })
+
+        if (body.items.length >= body.songsPerPerson){
+            document.getElementById("addSongButton").disabled = true;
+        }else{
+            document.getElementById("addSongButton").disabled = false;
+        }
 
         document.getElementById("playlistcount").innerHTML = body.count+" / "+(body.playerCount*body.songsPerPerson)
         document.getElementById("playercount").innerHTML = body.playerCount

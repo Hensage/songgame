@@ -17,7 +17,9 @@ class game{
         this.hostid=hostid;
         this.hostName=hostName;
         this.accessToken=accessToken;
-        this.songsPerPerson= songsPerPerson;
+        this.songsPerPerson= Number(songsPerPerson);
+        
+        this.countCounts = new Array(this.songsPerPerson+1).fill(0);
         this.password = myhelper.makeid(16);
         setInterval(this.tick.bind(this),1000);
     }
@@ -34,6 +36,7 @@ class game{
         this.hostName=oldGame.hostName;
         this.accessToken=oldGame.accessToken;
         this.songsPerPerson= oldGame.songsPerPerson;
+        this.countCounts = oldGame.countCounts;
         this.password = oldGame.password;
         setInterval(this.tick.bind(this),1000);
     }
@@ -144,6 +147,7 @@ class game{
             playerCount:this.playerCount,
             songsPerPerson:this.songsPerPerson,
             count:this.playlist.length,
+            countCounts:this.countCounts,
             items:theirSong
         }
     }
@@ -178,12 +182,25 @@ class game{
     }
 
     async tick(){
-        let ids = this.players
+        let ids = [...this.players];
+
+        this.countCounts.fill(0);
+
+        let playerSongCounts = new Array(this.playerCount).fill(0);
+
         this.playlist.forEach((song) => {
+            playerSongCounts[this.players.indexOf(song.playerID)]++
             if (!ids.includes(song.playerID)){
                 ids.push(song.playerID)
             }
         })
+
+        playerSongCounts.forEach((count) => {
+            this.countCounts[count]++;
+        })
+
+        
+
         if (!ids.includes(this.hostPlayerID)){
             ids.push(this.hostPlayerID);
         }

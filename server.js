@@ -271,6 +271,7 @@ app.get("/loadinfo", (req, res) => {
         validGame:true,
         hostName: gameSearch.game.hostName,
         isPlayerHost: gameSearch.game.isHost(playerID),
+        songsPerPerson: gameSearch.game.songsPerPerson
     });
 });
 
