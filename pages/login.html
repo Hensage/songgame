@@ -85,6 +85,17 @@
                         <label class="form-check-label" for="songcount6">6</label>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <div>
+                        Era of Music  
+                    </div>
+                    <label for="afterRange" class="form-label">After</label>
+                    <input type="range" class="form-range" min="1950" max="2024" value="1950" id="afterRange">
+                    <div id="afterYear">1950</div>
+                    <label for="beforeRange" class="form-label">Before</label>
+                    <input type="range" class="form-range" min="1950" max="2024" value="2024" id="beforeRange">
+                    <div id="beforeYear">2024</div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">Back</button>
@@ -133,7 +144,8 @@
         loging = true
         document.getElementById("loginSpinner").classList.remove("d-none");
         document.getElementById("login").disabled=true
-        window.location = `/login?playerID=${playerID}&songCount=${songCount}`;
+        let era = document.getElementById("beforeRange").value+"-"+document.getElementById("afterRange").value
+        window.location = `/login?playerID=${playerID}&songCount=${songCount}&era=${era}`;
         setTimeout(() => {loging = false}, 20000)
     }
 
@@ -187,4 +199,19 @@
     }
     checkForGames()
     setInterval(checkForGames,1000);
+
+    document.getElementById("afterRange").addEventListener("input", function() {
+        if (document.getElementById("afterRange").value > document.getElementById("beforeRange").value){
+            document.getElementById("beforeRange").value = document.getElementById("afterRange").value
+        }
+        document.getElementById("afterYear").innerHTML = document.getElementById("afterRange").value
+    });
+    document.getElementById("beforeRange").addEventListener("input", function() {
+        if (document.getElementById("beforeRange").value < document.getElementById("afterRange").value){
+            document.getElementById("afterRange").value = document.getElementById("beforeRange").value
+        }
+        document.getElementById("beforeYear").innerHTML = document.getElementById("beforeRange").value
+    });
+
+
 </script>
