@@ -3,7 +3,9 @@ const express = require("express");
 const axios = require('axios');
 const myhelper = require('./mymodules/helper');
 const game = require('./mymodules/game');
+var fs = require('fs');
 const querystring = require('node:querystring'); 
+const c = require('config');
 const app = express();
 const port = 3000;
 
@@ -18,16 +20,28 @@ let password = myhelper.makeid(16)
 var playerCount = 0;
 var songsPerPerson = 5;
 */
+const volumePath = config.get("volumePath");
 
 var games = [];
+if (fs.existsSync(volumePath)){
+    var data = JSON.parse(fs.readFileSync(volumePath));
+    data.forEach((oldGame) => {
+        let newGame= new game.game()
+        newGame.constructFromOld(oldGame)
+        games.push(newGame)
+    });
+}else{
+    fs.writeFileSync(volumePath, JSON.stringify(games));
+}
 
 var loggingIn = {}
 
-var redirect_uri = 'https://songgame.fly.dev/callback';
+var redirect_uri = config.get("redirect_uri");
 //var redirect_uri = 'http://192.168.1.163:3000/callback';
 
 const client_id = config.get('client_id');
 const client_secret = config.get('client_secret');
+const stub = config.get("stub");
 
 app.use(express.static("public"));
 app.use(express.json());
@@ -73,6 +87,11 @@ function getGameByPlayerID(playerID){
     return {game:currentGame,found:found};
 }
 
+function fileWriteCallback(err, result){
+    if (err) {
+        console.log(err,result)
+    }
+}
 
 app.get("/", (req, res) => {
     let playerID = req.query.playerID
@@ -108,6 +127,7 @@ app.post("/joinGame", (req, res) => {
     let existingGame = getGameByPlayerID(playerID)
     if (existingGame.found) {
         existingGame.game.removePlayerFromGame(playerID)
+        fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
     }
 
     let gameID = req.query.gameID
@@ -115,6 +135,7 @@ app.post("/joinGame", (req, res) => {
     let gameSearch = getGameByGameID(gameID)
     if (gameSearch.found) {
         gameSearch.game.addPlayerToGame(playerID)
+        fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
         res.sendStatus(200);
     }else{
         res.sendStatus(404);
@@ -126,6 +147,7 @@ app.post("/leaveGame", (req, res) => {
     let existingGame = getGameByPlayerID(playerID)
     if (existingGame.found) {
         existingGame.game.removePlayerFromGame(playerID)
+        fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
         res.sendStatus(200);
     }else{
         res.sendStatus(404);
@@ -137,6 +159,7 @@ app.post("/closeGame", (req, res) => {
     let existingGame = getGameByPlayerID(playerID)
     if (existingGame.found && existingGame.game.isHost(playerID)) {
         games.splice(games.indexOf(existingGame.game),1)
+        fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
         res.sendStatus(200);
     }else{
         res.sendStatus(404);
@@ -148,43 +171,56 @@ app.get('/login', async (req, res) =>{
     let songCount = req.query.songCount
     var state = myhelper.makeid(16);
     loggingIn[state] = {playerID:playerID,songCount:songCount}
+    console.log(loggingIn[state]);
 
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
+    if (stub){
+        res.redirect(redirect_uri+"?state="+state);
+    }else{
+        res.redirect('https://accounts.spotify.com/authorize?' +
+            querystring.stringify({
+            response_type: 'code',
+            client_id: client_id,
+            scope: scope,
+            redirect_uri: redirect_uri,
+            state: state
+            }));
+    }
 
-    res.redirect('https://accounts.spotify.com/authorize?' +
-        querystring.stringify({
-        response_type: 'code',
-        client_id: client_id,
-        scope: scope,
-        redirect_uri: redirect_uri,
-        state: state
-        }));
 });
 
 app.get('/callback', async (req, res) => {
-
+    let newGame;
     var code = req.query.code || null;
     var state = req.query.state || null;
-    if (state === null) {
-        res.redirect('/#' +
-            querystring.stringify({
-            error: 'state_mismatch'
-            }));
-        return
-    }
-    let accessToken = await getToken(code)
-    const response = await axios.get(`https://api.spotify.com/v1/me`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}` 
-      }
-    });
-
     let gameInfo = loggingIn[state]
-
     delete loggingIn[state]
+    if (!stub){
+        if (state === null) {
+            res.redirect('/#' +
+                querystring.stringify({
+                error: 'state_mismatch'
+                }));
+            return
+        }
+        let accessToken = await getToken(code)
+        const response = await axios.get(`https://api.spotify.com/v1/me`, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}` 
+        }
+        });
 
-    let newGame=  new game.game(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount)
+        newGame=  new game.game()
+        newGame.construct(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount)
+    }else{
+        newGame=  new game.game()
+        newGame.construct(gameInfo.playerID,myhelper.makeid(16),"STUBACCOUNT","TOKEN",gameInfo.songCount)
+        
+    }
+    console.log(newGame)
     games.push(newGame)
+    console.log(games)
+    fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
     res.redirect(`/?playerID=${gameInfo.playerID}`);
 });
 
@@ -197,17 +233,23 @@ app.get('/search', async (req, res) => {
     }
     try {
         console.log("searching")
-        const response = await axios.get(`https://api.spotify.com/v1/search`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            },
-            params: {
-                q: query,
-                type: 'track',
-                limit: 5
-            }
-        });
-        res.json(response.data.tracks.items);
+        if (stub){
+            let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
+            res.json(data.tracks.items);
+        }else{
+            const response = await axios.get(`https://api.spotify.com/v1/search`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                params: {
+                    q: query,
+                    type: 'track',
+                    limit: 5
+                }
+            });
+            res.json(response.data.tracks.items);
+        }
+
     } catch (error) {
         res.status(500).send('Error fetching data from Spotify');
     }
@@ -256,6 +298,7 @@ app.get('/remove', async (req, res) => {
 
     var id = req.query["songID"];
     gameSearch.game.removeSong(playerID,id);
+    fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
     res.sendStatus(200);
 });
 
@@ -267,8 +310,9 @@ app.post('/submit', async (req, res) => {
     if (gameSearch.found == false){
         return
     }
-
-    res.send(await gameSearch.game.submit(playerID));
+    let output = await gameSearch.game.submit(playerID)
+    fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
+    res.send(output);
 });
 
 // Will be just for admin
@@ -281,6 +325,7 @@ app.post('/clear', async (req, res) => {
     }
 
     gameSearch.game.clear(playerID);
+    fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
     res.sendStatus(200);
 });
 
@@ -295,7 +340,9 @@ app.post('/add', async (req, res) => {
 
     var body = req.body;
     body.playerID = playerID
-    res.send(gameSearch.game.addSong(body));
+    let output = gameSearch.game.addSong(body)
+    fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
+    res.send(output);
  });
 
 
