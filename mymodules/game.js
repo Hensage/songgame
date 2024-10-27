@@ -6,8 +6,8 @@ class game{
     constructor(){}
     construct(hostPlayerID,hostid,hostName,accessToken,songsPerPerson){
         this.playlist = [];
+        this.activePlayers = [];
         this.players = [];
-        this.playerCount = 0;
         this.playlistURL = '';
         this.expiresAt = Date.now() + 1000*60*59;
 
@@ -25,8 +25,8 @@ class game{
     }
     constructFromOld(oldGame){
         this.playlist = oldGame.playlist;
+        this.activePlayers = oldGame.activePlayers;
         this.players = oldGame.players;
-        this.playerCount = oldGame.playerCount;
         this.playlistURL = oldGame.playlistURL;
         this.expiresAt = oldGame.expiresAt;
 
@@ -35,8 +35,12 @@ class game{
         this.hostid=oldGame.hostid;
         this.hostName=oldGame.hostName;
         this.accessToken=oldGame.accessToken;
-        this.songsPerPerson= oldGame.songsPerPerson;
-        this.countCounts = oldGame.countCounts;
+        this.songsPerPerson= Number(oldGame.songsPerPerson);
+        if (oldGame.countCounts){
+            this.countCounts = oldGame.countCounts;
+        }else{
+            this.countCounts = new Array(this.songsPerPerson+1).fill(0);
+        }
         this.password = oldGame.password;
         setInterval(this.tick.bind(this),1000);
     }
@@ -67,14 +71,17 @@ class game{
     }
 
     isPlayerInGame(playerID){
-        return this.players.includes(playerID);
+        return this.activePlayers.includes(playerID);
     }
 
     addPlayerToGame(playerID){
         if (this.isPlayerInGame(playerID)) {
             return "Already in game";
         }else{
-            this.players.push(playerID);
+            this.activePlayers.push(playerID);
+            if (!this.players.includes(playerID)){
+                this.players.push(playerID);
+            }
             return "Added";
         }
     }
@@ -83,7 +90,19 @@ class game{
         if (!this.isPlayerInGame(playerID)) {
             return "Not in game";
         }else{
-            this.players.splice(this.players.indexOf(playerID),1);
+            this.activePlayers.splice(this.activePlayers.indexOf(playerID),1);
+            if (!this.isHost(playerID)) {
+                let safe =false
+                this.playlist.forEach((song,index) => {
+                    if (song.playerID === playerID) {
+                        safe =true
+                        return
+                    }
+                })
+                if (!safe){
+                    this.players.splice(this.players.indexOf(playerID),1);
+                }
+            }
             return "Removed";
         }
     }
@@ -144,7 +163,7 @@ class game{
         return {
             validGame:true,
             isPlaying:playing,
-            playerCount:this.playerCount,
+            playerCount:this.players.length,
             songsPerPerson:this.songsPerPerson,
             count:this.playlist.length,
             countCounts:this.countCounts,
@@ -182,29 +201,17 @@ class game{
     }
 
     async tick(){
-        let ids = [...this.players];
-
         this.countCounts.fill(0);
 
-        let playerSongCounts = new Array(this.playerCount).fill(0);
+        let playerSongCounts = new Array(this.players.length).fill(0);
 
         this.playlist.forEach((song) => {
             playerSongCounts[this.players.indexOf(song.playerID)]++
-            if (!ids.includes(song.playerID)){
-                ids.push(song.playerID)
-            }
         })
 
         playerSongCounts.forEach((count) => {
             this.countCounts[count]++;
         })
-
-        
-
-        if (!ids.includes(this.hostPlayerID)){
-            ids.push(this.hostPlayerID);
-        }
-        this.playerCount = ids.length
     }
 }
 
