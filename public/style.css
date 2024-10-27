@@ -52,3 +52,14 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #457e59; 
   }
+
+.progress-bar {
+    transition: width 0.3s;
+}
+.countRow {
+    margin-bottom: 20px;
+}
+
+.countIcon{
+    margin-right: 5px;
+}
