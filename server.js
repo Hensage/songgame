@@ -169,8 +169,9 @@ app.post("/closeGame", (req, res) => {
 app.get('/login', async (req, res) =>{
     let playerID = req.query.playerID
     let songCount = req.query.songCount
+    let era = req.query.era
     var state = myhelper.makeid(16);
-    loggingIn[state] = {playerID:playerID,songCount:songCount}
+    loggingIn[state] = {playerID:playerID,songCount:songCount,era:era}
     console.log(loggingIn[state]);
 
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
@@ -211,10 +212,10 @@ app.get('/callback', async (req, res) => {
         });
 
         newGame=  new game.game()
-        newGame.construct(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount)
+        newGame.construct(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount,gameInfo.era)
     }else{
         newGame=  new game.game()
-        newGame.construct(gameInfo.playerID,myhelper.makeid(16),"STUBACCOUNT","TOKEN",gameInfo.songCount)
+        newGame.construct(gameInfo.playerID,myhelper.makeid(16),"STUBACCOUNT","TOKEN",gameInfo.songCount,gameInfo.era)
         
     }
     console.log(newGame)
@@ -231,8 +232,17 @@ app.get('/search', async (req, res) => {
         res.status(405).send('No query provided');
         return
     }
+    let playerID = req.query.playerID
+    let gameSearch = getGameByPlayerID(playerID)
+    if (gameSearch.found == false){
+        res.send({
+            validGame:false
+        })
+        return
+    }
     try {
         console.log("searching")
+        console.log("year:"+gameSearch.game.era+" "+query)
         if (stub){
             let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
             res.json(data.tracks.items);
@@ -242,7 +252,7 @@ app.get('/search', async (req, res) => {
                     'Authorization': `Bearer ${accessToken}`
                 },
                 params: {
-                    q: query,
+                    q: "year:"+gameSearch.game.era+" "+query,
                     type: 'track',
                     limit: 5
                 }
@@ -354,7 +364,7 @@ app.post('/add', async (req, res) => {
         }
     });
 }
-
+tick();
 setInterval(tick,30000);
 
 app.listen(port, () => {
