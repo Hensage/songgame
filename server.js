@@ -242,6 +242,7 @@ app.get('/search', async (req, res) => {
     }
     try {
         console.log("searching")
+        console.log("year:"+gameSearch.game.era+" "+query)
         if (stub){
             let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
             res.json(data.tracks.items);
@@ -251,7 +252,7 @@ app.get('/search', async (req, res) => {
                     'Authorization': `Bearer ${accessToken}`
                 },
                 params: {
-                    q: "year:"+gameSearch.era+" "+query,
+                    q: "year:"+gameSearch.game.era+" "+query,
                     type: 'track',
                     limit: 5
                 }
@@ -363,7 +364,7 @@ app.post('/add', async (req, res) => {
         }
     });
 }
-
+tick();
 setInterval(tick,30000);
 
 app.listen(port, () => {

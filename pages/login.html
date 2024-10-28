@@ -87,14 +87,18 @@
                 </div>
                 <div class="mb-3">
                     <div>
-                        Era of Music  
+                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                            Filter by era of music
+                        </a>
                     </div>
-                    <label for="afterRange" class="form-label">After</label>
-                    <input type="range" class="form-range" min="1950" max="2024" value="1950" id="afterRange">
-                    <div id="afterYear">1950</div>
-                    <label for="beforeRange" class="form-label">Before</label>
-                    <input type="range" class="form-range" min="1950" max="2024" value="2024" id="beforeRange">
-                    <div id="beforeYear">2024</div>
+                    <div class="collapse" id="collapseExample">
+                        <label for="afterRange" class="form-label">After</label>
+                        <input type="range" class="form-range" min="1950" max="2024" value="1950" id="afterRange">
+                        <div id="afterYear">1950</div>
+                        <label for="beforeRange" class="form-label">Before</label>
+                        <input type="range" class="form-range" min="1950" max="2024" value="2024" id="beforeRange">
+                        <div id="beforeYear">2024</div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -144,7 +148,7 @@
         loging = true
         document.getElementById("loginSpinner").classList.remove("d-none");
         document.getElementById("login").disabled=true
-        let era = document.getElementById("beforeRange").value+"-"+document.getElementById("afterRange").value
+        let era = document.getElementById("afterRange").value+"-"+document.getElementById("beforeRange").value
         window.location = `/login?playerID=${playerID}&songCount=${songCount}&era=${era}`;
         setTimeout(() => {loging = false}, 20000)
     }
