@@ -218,9 +218,9 @@ app.get('/callback', async (req, res) => {
         newGame.construct(gameInfo.playerID,myhelper.makeid(16),"STUBACCOUNT","TOKEN",gameInfo.songCount,gameInfo.era)
         
     }
-    console.log(newGame)
+    //console.log(newGame)
     games.push(newGame)
-    console.log(games)
+    //console.log(games)
     fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
     res.redirect(`/?playerID=${gameInfo.playerID}`);
 });
@@ -242,7 +242,8 @@ app.get('/search', async (req, res) => {
     }
     try {
         console.log("searching")
-        console.log("year:"+gameSearch.game.era+" "+query)
+        var finalQ = `year:`+gameSearch.game.era+` "`+query+`"`
+        console.log(finalQ)
         if (stub){
             let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
             res.json(data.tracks.items);
@@ -252,7 +253,7 @@ app.get('/search', async (req, res) => {
                     'Authorization': `Bearer ${accessToken}`
                 },
                 params: {
-                    q: "year:"+gameSearch.game.era+" "+query,
+                    q: finalQ,
                     type: 'track',
                     limit: 5
                 }
@@ -261,6 +262,7 @@ app.get('/search', async (req, res) => {
         }
 
     } catch (error) {
+        console.error(error);
         res.status(500).send('Error fetching data from Spotify');
     }
 });

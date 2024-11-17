@@ -286,7 +286,9 @@
             closeButton2.disabled=true;
             suggestions.innerHTML = '';
             searching=true
-            const query = input.value;
+            var query = input.value;
+            query = encodeURIComponent(query)
+
             const response = await fetch(`/search?playerID=${playerID}&query=${query}`);
             if (response.status==200){
                 const songs = await response.json();
@@ -393,7 +395,6 @@
                 document.getElementById("yoursongs").appendChild(newsong)
             }
         })
-        console.log(body.countCounts)
         body.countCounts.forEach((count,index) => {
             document.getElementById("countBar"+index).style.width = (count/body.playerCount)*100+"%"
             document.getElementById("countNumber"+index).innerHTML = count
