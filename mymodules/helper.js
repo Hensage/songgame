@@ -10,9 +10,9 @@ function makeid(length){
     return result;
 }
 
-function shuffle(array){
+function shuffle(array,players,maxSongs){
     let currentIndex = array.length;
-  
+    
     // While there remain elements to shuffle...
     while (currentIndex != 0) {
   
@@ -24,6 +24,17 @@ function shuffle(array){
       [array[currentIndex], array[randomIndex]] = [
         array[randomIndex], array[currentIndex]];
     }
+    let rounds = [];
+    for (let i = 0; i < maxSongs; i++) {
+        rounds.push([]);
+    }
+    for (let i = 0; i < players.length; i++) {
+        let songs = array.filter((song) => song.playerID == players[i])
+        for (let j = 0; j < songs.length; j++) {
+            rounds[j].splice((rounds[j].length+1) * Math.random() | 0, 0, songs[j])
+        }
+    }
+    return rounds.flat();
 }
 
 module.exports = {makeid, shuffle}

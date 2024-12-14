@@ -100,7 +100,6 @@ app.get("/", (req, res) => {
         return
     }
     let gameSearch = getGameByPlayerID(playerID)
-
     if (gameSearch.found) {
         res.sendFile("./index.html", { root: __dirname+"/pages"});
     }else{
@@ -157,8 +156,12 @@ app.post("/leaveGame", (req, res) => {
 app.post("/closeGame", (req, res) => {
     let playerID = req.query.playerID
     let existingGame = getGameByPlayerID(playerID)
-    if (existingGame.found && existingGame.game.isHost(playerID)) {
-        games.splice(games.indexOf(existingGame.game),1)
+    if (existingGame.found) {
+        if (existingGame.game.isHost(playerID)){
+            games.splice(games.indexOf(existingGame.game),1)
+        }else{
+            existingGame.game.removePlayerFromGame(playerID)
+        }
         fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
         res.sendStatus(200);
     }else{
@@ -172,7 +175,6 @@ app.get('/login', async (req, res) =>{
     let era = req.query.era
     var state = myhelper.makeid(16);
     loggingIn[state] = {playerID:playerID,songCount:songCount,era:era}
-    console.log(loggingIn[state]);
 
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
     if (stub){
@@ -241,9 +243,7 @@ app.get('/search', async (req, res) => {
         return
     }
     try {
-        console.log("searching")
         var finalQ = `year:`+gameSearch.game.era+` "`+query+`"`
-        console.log(finalQ)
         if (stub){
             let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
             res.json(data.tracks.items);
@@ -323,7 +323,7 @@ app.post('/submit', async (req, res) => {
     if (gameSearch.found == false){
         return
     }
-    let output = await gameSearch.game.submit(playerID)
+    let output = await gameSearch.game.submit(playerID,stub)
     fs.writeFile(volumePath, JSON.stringify(games),fileWriteCallback);
     res.send(output);
 });

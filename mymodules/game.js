@@ -173,24 +173,28 @@ class game{
         }
     }
 
-    async submit(playerID){
+    async submit(playerID,stub){
         if (!this.isHost(playerID)){
             return "not host"
         }
-
-        var playlistData = await this.createPlaylist()
         if (this.playlist.length>0){
             var query = ""
-            myhelper.shuffle(this.playlist)
-            this.playlist.forEach((song)=>{
+            let newPlayList = myhelper.shuffle(this.playlist,this.players,this.songsPerPerson)
+            console.log(newPlayList.map((song) => song.name));
+            newPlayList.forEach((song)=>{
                 query = query+","+song.uri
             })
             query = query.slice(1)
         }
-        await this.addToPlaylist(playlistData.data.id,query)
+        if (!stub){
+            var playlistData = await this.createPlaylist()
+            await this.addToPlaylist(playlistData.data.id,query)
+            this.playlistURL = playlistData.data.external_urls.spotify
+        }else{
+            this.playlistURL = query;
+            console.log(query)
+        }
         this.playlist=[]
-        this.playlistURL = playlistData.data.external_urls.spotify
-        console.log(this.playlistURL);
         return this.playlistURL;
     }
 

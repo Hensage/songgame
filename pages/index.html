@@ -193,7 +193,8 @@
                 <h1 class="modal-title fs-5" id="staticBackdropLabel">Playlist building phase is over</h1>
                 </div>
                 <div id="endGameBody" class="modal-body">
-                    The host has submitted the playlist and now has the spotify link. The game can now begin! You can now leave the game.
+                    <div id="endGameText">The host has submitted the playlist and now has the spotify link. The game can now begin! You can now leave the game.</div>
+                    <img id="domphoto" class="d-none" style="width: 300px;" src="domphoto.jpg"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="closeGame()">Close</button>
@@ -222,7 +223,7 @@
 
     var search = ""
     var searching = false
-
+    var audioPlaying=false
     var playlistLink = ""
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -232,6 +233,18 @@
         infoRequest = await fetch(`/loadinfo?playerID=${playerID}`);
         info = await infoRequest.json();
         
+        
+        // DOM
+        if (navigator.userAgent.includes("Pixel") && !audioPlaying){
+            try{
+                var audio = new Audio('Lobby.mp3');
+                audio.loop = true;
+                await audio.play();
+                audioPlaying = true
+            }catch(e){}
+            
+        }
+
         if (!info.validGame) {
             window.location = `/?playerID=${playerID}`;
             return
@@ -361,8 +374,11 @@
         if (!body.isPlaying){
             $('#staticBackdrop').modal('show');
             if (playlistLink != ""){
-                $('#endGameBody').text("The link to the playlist here")
+                $('#endGameText').text("The link to the playlist here")
                 document.getElementById("spotLink").classList.remove("d-none");
+            }else if (navigator.userAgent.includes("Pixel")){
+                $('#endGameText').text("Game's done bitch");
+                document.getElementById("domphoto").classList.remove("d-none");
             }
             return
         }
