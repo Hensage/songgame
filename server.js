@@ -245,7 +245,10 @@ app.get('/search', async (req, res) => {
         return
     }
     try {
-        var finalQ = `year:`+gameSearch.game.era+` & genre:"`+gameSearch.game.genre+`" & "`+query+`"`
+        var finalQ = `year:`+gameSearch.game.era+` & "`+query+`"`
+        if (gameSearch.game.genre != ""){
+            finalQ = `year:`+gameSearch.game.era+` & genre:"`+gameSearch.game.genre+`" & "`+query+`"`
+        }
         if (stub){
             let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
             res.json(data.tracks.items);

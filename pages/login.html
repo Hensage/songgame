@@ -110,7 +110,7 @@
                         <div class="search-container">
                             <div class="input-group">
                                 <input type="text" id="searchInput" class="form-control bg-danger" 
-                                       placeholder="Search..." aria-label="Search">
+                                       placeholder="Search..." aria-label="Search" autocomplete="off">
                             </div>
                             <div class="dropdown">
                                 <ul class="dropdown-menu bg-danger" id="dropdownMenu"></ul>
@@ -219,7 +219,12 @@
         document.getElementById("loginSpinner").classList.remove("d-none");
         document.getElementById("login").disabled=true
         let era = document.getElementById("afterRange").value+"-"+document.getElementById("beforeRange").value
-        let genre = document.getElementById("searchInput").value;
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        const isRealGenre = allData.includes(searchTerm);
+        let genre = "";
+        if (isRealGenre){
+            genre = searchTerm;
+        }
         window.location = `/login?playerID=${playerID}&songCount=${songCount}&era=${era}&genre=${genre}`;
         setTimeout(() => {loging = false}, 20000)
     }
