@@ -87,17 +87,35 @@
                 </div>
                 <div class="mb-3">
                     <div>
-                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseEra" role="button" aria-expanded="false" aria-controls="collapseEra">
                             Filter by era of music
                         </a>
                     </div>
-                    <div class="collapse" id="collapseExample">
+                    <div class="collapse" id="collapseEra">
                         <label for="afterRange" class="form-label">After</label>
                         <input type="range" class="form-range" min="1950" max="2024" value="1950" id="afterRange">
                         <div id="afterYear">1950</div>
                         <label for="beforeRange" class="form-label">Before</label>
                         <input type="range" class="form-range" min="1950" max="2024" value="2024" id="beforeRange">
                         <div id="beforeYear">2024</div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div>
+                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseGenre" role="button" aria-expanded="false" aria-controls="collapseGenre">
+                            Filter by Genre
+                        </a>
+                    </div>
+                    <div class="collapse" id="collapseGenre">
+                        <div class="search-container">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control bg-danger" 
+                                       placeholder="Search..." aria-label="Search">
+                            </div>
+                            <div class="dropdown">
+                                <ul class="dropdown-menu bg-danger" id="dropdownMenu"></ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,6 +147,58 @@
 </html>
 
 <script>
+    // Fetch JSON data and initialize dropdown
+    let allData = [];
+    fetch('spotifyGenres.json')
+        .then(response => response.json())
+        .then(data => {
+            allData = data;
+            populateDropdown(allData);
+        })
+        .catch(error => console.error('Error loading JSON:', error));
+
+    // DOM elements
+    const searchInput = document.getElementById('searchInput');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
+    // Populate dropdown with options
+    function populateDropdown(items) {
+        dropdownMenu.innerHTML = items.map(item => 
+            `<li><a class="dropdown-item" href="#">${item}</a></li>`
+        ).join('');
+    }
+
+    // Filter functionality
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredData = allData.filter(item => 
+            item.toLowerCase().includes(searchTerm)
+        );
+        
+        populateDropdown(filteredData);
+        const dropdown = new bootstrap.Dropdown(dropdownMenu);
+        if (searchTerm.length > 0) {
+            dropdownMenu.classList.add('show');
+        } else {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    // Handle option selection
+    dropdownMenu.addEventListener('click', function(e) {
+        if (e.target.classList.contains('dropdown-item')) {
+            searchInput.value = e.target.textContent;
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('#searchInput')) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
     var playerID = localStorage.getItem("playerID");
     if (playerID == null){
         playerID = uuidv4();
@@ -149,7 +219,8 @@
         document.getElementById("loginSpinner").classList.remove("d-none");
         document.getElementById("login").disabled=true
         let era = document.getElementById("afterRange").value+"-"+document.getElementById("beforeRange").value
-        window.location = `/login?playerID=${playerID}&songCount=${songCount}&era=${era}`;
+        let genre = document.getElementById("searchInput").value;
+        window.location = `/login?playerID=${playerID}&songCount=${songCount}&era=${era}&genre=${genre}`;
         setTimeout(() => {loging = false}, 20000)
     }
 

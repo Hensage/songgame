@@ -63,3 +63,14 @@
 .countIcon{
     margin-right: 5px;
 }
+
+.dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+}
+.search-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+}

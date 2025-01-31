@@ -170,11 +170,13 @@ app.post("/closeGame", (req, res) => {
 })
 
 app.get('/login', async (req, res) =>{
-    let playerID = req.query.playerID
-    let songCount = req.query.songCount
-    let era = req.query.era
+    let playerID = req.query.playerID;
+    let songCount = req.query.songCount;
+    let era = req.query.era;
+    let genre = req.query.genre;
+    console.log(genre);
     var state = myhelper.makeid(16);
-    loggingIn[state] = {playerID:playerID,songCount:songCount,era:era}
+    loggingIn[state] = {playerID:playerID,songCount:songCount,era:era,genre:genre};
 
     var scope = 'user-read-email user-read-private playlist-read-private playlist-modify-public playlist-modify-private';
     if (stub){
@@ -214,10 +216,10 @@ app.get('/callback', async (req, res) => {
         });
 
         newGame=  new game.game()
-        newGame.construct(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount,gameInfo.era)
+        newGame.construct(gameInfo.playerID,response.data.id,response.data.display_name,accessToken,gameInfo.songCount,gameInfo.era,gameInfo.genre)
     }else{
         newGame=  new game.game()
-        newGame.construct(gameInfo.playerID,myhelper.makeid(16),"STUBACCOUNT","TOKEN",gameInfo.songCount,gameInfo.era)
+        newGame.construct(gameInfo.playerID,myhelper.makeid(16),"STUBACCOUNT","TOKEN",gameInfo.songCount,gameInfo.era,gameInfo.genre)
         
     }
     //console.log(newGame)
@@ -243,7 +245,7 @@ app.get('/search', async (req, res) => {
         return
     }
     try {
-        var finalQ = `year:`+gameSearch.game.era+` "`+query+`"`
+        var finalQ = `year:`+gameSearch.game.era+` & genre:"`+gameSearch.game.genre+`" & "`+query+`"`
         if (stub){
             let data = JSON.parse(fs.readFileSync("./stubdata/search.json"))
             res.json(data.tracks.items);

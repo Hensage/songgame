@@ -4,7 +4,7 @@ const axios = require('axios');
 
 class game{
     constructor(){}
-    construct(hostPlayerID,hostid,hostName,accessToken,songsPerPerson,era){
+    construct(hostPlayerID,hostid,hostName,accessToken,songsPerPerson,era,genre){
         this.playlist = [];
         this.activePlayers = [];
         this.players = [];
@@ -19,6 +19,7 @@ class game{
         this.accessToken=accessToken;
         this.songsPerPerson= Number(songsPerPerson);
         this.era = era;
+        this.genre = genre;
         
         this.countCounts = new Array(this.songsPerPerson+1).fill(0);
         this.password = myhelper.makeid(16);
@@ -38,6 +39,7 @@ class game{
         this.accessToken=oldGame.accessToken;
         this.songsPerPerson= Number(oldGame.songsPerPerson);
         this.era = oldGame.era;
+        this.genre = oldGame.genre;
         if (oldGame.countCounts){
             this.countCounts = oldGame.countCounts;
         }else{
