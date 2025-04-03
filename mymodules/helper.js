@@ -31,7 +31,14 @@ function shuffle(array,players,maxSongs){
     for (let i = 0; i < players.length; i++) {
         let songs = array.filter((song) => song.playerID == players[i])
         for (let j = 0; j < songs.length; j++) {
-            rounds[j].splice((rounds[j].length+1) * Math.random() | 0, 0, songs[j])
+            let select = Math.random();
+            if (j > 0 && select < 0.2) {
+                rounds[j-1].splice((rounds[j].length+1) * Math.random() | 0, 0, songs[j])
+            } else if(j < songs.length-1 && select > 0.8) {
+                rounds[j+1].splice((rounds[j].length+1) * Math.random() | 0, 0, songs[j])
+            } else {
+                rounds[j].splice((rounds[j].length+1) * Math.random() | 0, 0, songs[j])
+            }
         }
     }
     return rounds.flat();
