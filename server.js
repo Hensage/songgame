@@ -260,7 +260,7 @@ app.get('/search', async (req, res) => {
                 params: {
                     q: finalQ,
                     type: 'track',
-                    limit: 5
+                    limit: 10
                 }
             });
             res.json(response.data.tracks.items);
