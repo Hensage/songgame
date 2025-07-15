@@ -17,6 +17,7 @@ class game{
         this.hostid=hostid;
         this.hostName=hostName;
         this.accessToken=accessToken;
+        console.log("Access Token:",this.accessToken);
         this.songsPerPerson= Number(songsPerPerson);
         this.era = era;
         this.genre = genre;
@@ -37,6 +38,7 @@ class game{
         this.hostid=oldGame.hostid;
         this.hostName=oldGame.hostName;
         this.accessToken=oldGame.accessToken;
+        console.log("Access Token:",this.accessToken);
         this.songsPerPerson= Number(oldGame.songsPerPerson);
         this.era = oldGame.era;
         this.genre = oldGame.genre;
