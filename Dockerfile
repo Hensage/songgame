@@ -2,7 +2,7 @@
 
 # Adjust NODE_VERSION as desired
 ARG NODE_VERSION=16.14.0
-FROM node:${NODE_VERSION}-slim as base
+FROM node:${NODE_VERSION}-bullseye-slim as base
 
 LABEL fly_launch_runtime="Node.js"
 
@@ -27,14 +27,12 @@ RUN npm ci
 # Copy application code
 COPY --link . .
 
-#COPY --link ./config ./config
 
 # Final stage for app image
 FROM base
 
 # Copy built application
 COPY --from=build /app /app
-
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
