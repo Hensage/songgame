@@ -1,15 +1,16 @@
 
+const config = require('config');
 const myhelper = require('./helper');
 const axios = require('axios');
 
 class game{
     constructor(){}
-    construct(hostPlayerID,hostid,hostName,accessToken,songsPerPerson,era,genre){
+    construct(hostPlayerID,hostid,hostName,accessToken,refreshToken,songsPerPerson,era,genre){
         this.playlist = [];
         this.activePlayers = [];
         this.players = [];
         this.playlistURL = '';
-        this.expiresAt = Date.now() + 1000*60*59;
+        this.fullyExpires = Date.now() + 1000*60*60*6;
 
         this.gameid = myhelper.makeid(16);
         this.hostPlayerID = hostPlayerID;
@@ -17,38 +18,44 @@ class game{
         this.hostid=hostid;
         this.hostName=hostName;
         this.accessToken=accessToken;
-        console.log("Access Token:",this.accessToken);
+        this.expiresAt = Date.now() + 1000*60*55; // 55 minutes
+        this.refreshToken = refreshToken;
+        this.client_id = config.get('client_id');
         this.songsPerPerson= Number(songsPerPerson);
         this.era = era;
         this.genre = genre;
+        this.kill = false;
         
         this.countCounts = new Array(this.songsPerPerson+1).fill(0);
         this.password = myhelper.makeid(16);
-        setInterval(this.tick.bind(this),1000);
+        this.ticker = setInterval(this.tick.bind(this),1000);
     }
     constructFromOld(oldGame){
         this.playlist = oldGame.playlist;
         this.activePlayers = oldGame.activePlayers;
         this.players = oldGame.players;
         this.playlistURL = oldGame.playlistURL;
-        this.expiresAt = oldGame.expiresAt;
+        this.fullyExpires = oldGame.fullyExpires;
 
         this.gameid = oldGame.gameid;
         this.hostPlayerID = oldGame.hostPlayerID;
         this.hostid=oldGame.hostid;
         this.hostName=oldGame.hostName;
         this.accessToken=oldGame.accessToken;
-        console.log("Access Token:",this.accessToken);
+        this.refreshToken = oldGame.refreshToken;
+        this.expiresAt = Date.now() + 1000*60*55; // 55 minutes
+        this.refreshTokenFunction();
         this.songsPerPerson= Number(oldGame.songsPerPerson);
         this.era = oldGame.era;
         this.genre = oldGame.genre;
+        this.kill = oldGame.kill;
         if (oldGame.countCounts){
             this.countCounts = oldGame.countCounts;
         }else{
             this.countCounts = new Array(this.songsPerPerson+1).fill(0);
         }
         this.password = oldGame.password;
-        setInterval(this.tick.bind(this),1000);
+        this.ticker = setInterval(this.tick.bind(this),1000);
     }
 
     async createPlaylist(){
@@ -209,7 +216,32 @@ class game{
 
         this.playlist=[];
     }
-
+    async refreshTokenFunction(){
+        // Logic to refresh token
+        if (!config.get("stub")){
+            if (!this.refreshToken) {
+                this.kill = true;
+                return;
+            }
+            const params = new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: this.refreshToken
+            });
+            const response = await axios.post( 'https://accounts.spotify.com/api/token',params, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + (new Buffer.from(config.get("client_id") + ':' + config.get("client_secret")).toString('base64'))
+                }
+            });
+            this.accessToken = response.data.access_token;
+            if (response.data.refresh_token) {
+                // Only update refresh token if a new one is provided
+                this.refreshToken = response.data.refresh_token;
+            }
+        }
+        this.expiresAt = Date.now() + 1000*60*55; // 55 minutes
+        console.log("Refreshed Access Token:", this.accessToken,this.refreshToken);
+    }
     async tick(){
         this.countCounts.fill(0);
 
@@ -222,6 +254,9 @@ class game{
         playerSongCounts.forEach((count) => {
             this.countCounts[count]++;
         })
+        if (this.expiresAt <= Date.now()){
+            await this.refreshTokenFunction();
+        }
     }
 }
 
