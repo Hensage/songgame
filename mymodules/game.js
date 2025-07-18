@@ -60,7 +60,7 @@ class game{
             }, 
             {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${this.accessToken}`,
                 'Content-Type': 'application/json'
             },
             
@@ -71,7 +71,7 @@ class game{
     async addToPlaylist(id,uris){
         const response = await axios.post(`https://api.spotify.com/v1/playlists/`+id+`/tracks?position=0&uris=`+uris,{}, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`
+                'Authorization': `Bearer ${this.accessToken}`
             }
             });
     }

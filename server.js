@@ -255,7 +255,7 @@ app.get('/search', async (req, res) => {
         }else{
             const response = await axios.get(`https://api.spotify.com/v1/search`, {
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`
+                    'Authorization': `Bearer ${gameSearch.game.accessToken}`
                 },
                 params: {
                     q: finalQ,
