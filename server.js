@@ -101,7 +101,11 @@ app.get("/", (req, res) => {
     }
     let gameSearch = getGameByPlayerID(playerID)
     if (gameSearch.found) {
-        res.sendFile("./index.html", { root: __dirname+"/pages"});
+        if (gameSearch.game.playlistURL != ""){
+            res.sendFile("./game.html", { root: __dirname+"/pages"});
+        }else{
+            res.sendFile("./songpicker.html", { root: __dirname+"/pages"});
+        }
     }else{
         res.sendFile("./login.html", { root: __dirname+"/pages"});
     }

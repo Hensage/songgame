@@ -1,0 +1,151 @@
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+<body style="color: white;">
+    <div class="container vh-100 d-flex flex-column align-items-center p-2">
+        <div class="row container d-flex align-items-center text-center p-1 m-1 highlightBox">
+            <div class="d-flex align-items-center">
+                <img class="align-middle align-items-center" style="height:40px;width:40px; margin-right: 15px;" src="songgameLogo.png">
+                <div id="hostname" class="align-middle align-items-center fw-bold" style="flex-grow: 1;">The host is</div>
+                <button class="btn btn-Danger" data-bs-toggle="modal" data-bs-target="#leaveModal">Leave Game</button>
+            </div>
+        </div>
+        <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
+            <div class="adminonly flexElement row d-none">
+                <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary align-items-center">Get Spotify Link</button>
+            </div>
+            <div class="row">
+                <div class="col align-items-center text-center fw-bold">
+                    Songs Done
+                    <div id="playlistcount" class="faint">1/10</div>
+                </div>
+            </div>
+        </div>
+        <div class="row container align-items-center text-center p-1 m-1 highlightBox">
+            <div class="fw-bold" >
+                Your songs (Hideable)
+                <div class="fs-6 fw-normal faint fw-light" id="yoursongcount">
+                    0/0
+                </div>
+            </div>
+            <div id="yoursongs" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
+                <div class="songBox d-none" id="examplesong">
+                    <img src="" alt="Thumbnail" class="song-thumbnail">
+                    <div class="yoursonglabel" style="flex-grow: 1;">
+                        <div class="songname fw-bold">Song Name</div>
+                        <small class="songartist faint fw-light">Artist Name</small>
+                    </div>
+                    <div><button onclick="remove(0)" class="btn btn-Danger">X</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="row container align-items-center text-center p-1 m-1">
+            CURRENTLY PLAYING
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="leaveModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h1 class="modal-title fs-5" id="leaveModalLabel">Leave Game?</h1>
+            <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="leaveText" class="modal-body align-items-center text-center">
+                <p>Are you sure you want to leave the game?</p>
+                <p>You can rejoin the game at any time.</p>
+                <p class="adminonly d-none">Or as host, you can fully close the game for everyone as well</p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-Primary" data-bs-dismiss="modal">Stay</button>
+            <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="leaveGame()">Leave</button>
+            <button type="button" class="btn btn-Danger adminonly d-none" data-bs-dismiss="modal" onclick="closeGame()">Leave & close</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+<script>
+    var playerID = localStorage.getItem("playerID");
+    if (playerID == null){
+        playerID = uuidv4();
+        localStorage.setItem("playerID", playerID)
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const paramPlayerID = urlParams.get('playerID')
+    if (paramPlayerID != playerID){
+        window.location = `/?playerID=${playerID}`;
+    }
+    document.addEventListener('DOMContentLoaded', async () => {
+        const input = document.getElementById('songinput');
+        const suggestions = document.getElementById('suggestions');
+    
+        infoRequest = await fetch(`/loadinfo?playerID=${playerID}`);
+        info = await infoRequest.json();
+        
+        
+        // DOM
+        if (navigator.userAgent.includes("Pixel") && !audioPlaying){
+            try{
+                var audio = new Audio('Lobby.mp3');
+                audio.loop = true;
+                await audio.play();
+                audioPlaying = true
+            }catch(e){}
+            
+        }
+
+        if (!info.validGame) {
+            window.location = `/?playerID=${playerID}`;
+            return
+        }
+        
+        document.getElementById("hostname").innerHTML = "The host is " + info.hostName
+        if (info.isPlayerHost==true){
+            let adminOnly = document.getElementsByClassName("adminonly")
+            Array.from(adminOnly).forEach((element) => {
+                element.classList.remove("d-none")
+                if (element.classList.contains("flexElement")){
+                    element.classList.add("d-flex")
+                }
+            })
+        }
+
+        const zeroRow = document.getElementById(`countRow0`);
+        for (let i = 1; i <= info.songsPerPerson; i++) {
+            let newRow = zeroRow.cloneNode(true)
+            newRow.id = "countRow" + i;
+            newRow.getElementsByClassName("countIcon")[0].getElementsByClassName("countText")[0].innerHTML = i;
+            let newBar = newRow.getElementsByClassName("countBarCol")[0].getElementsByClassName("progress")[0]
+            newBar.getElementsByClassName("progress-bar")[0].id = "countBar" + i;
+            newBar.getElementsByClassName("progress-bar")[0].getElementsByClassName("progressText")[0].id="countNumber"+i;
+            document.getElementsByClassName("countBody")[0].appendChild(newRow);
+        }
+
+        update()
+        setInterval(update, 1000)
+
+        input.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                searchSongs();
+            }
+        });
+    });
+    async function leaveGame(){
+        var response = await fetch(`/leaveGame?playerID=${playerID}`,{method: "POST"});
+        window.location = `/?playerID=${playerID}`;
+    }
+
+    async function closeGame(){
+        var response = await fetch(`/closeGame?playerID=${playerID}`,{method: "POST"});
+        window.location = `/?playerID=${playerID}`;
+    }
+</script>
+</html>

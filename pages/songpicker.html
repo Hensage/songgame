@@ -370,7 +370,7 @@
             window.location = `/?playerID=${playerID}`;
             return
         }
-        
+        /*
         if (!body.isPlaying){
             $('#staticBackdrop').modal('show');
             if (playlistLink != ""){
@@ -382,6 +382,7 @@
             }
             return
         }
+        */
 
         let currentsongids = body.items.map((song) => song.id);
 
@@ -439,6 +440,8 @@
         var response = await fetch(`/submit?playerID=${playerID}`,{method: "POST"});
         const body = await response.text();
         playlistLink = body
+        update()
+        window.location = `/?playerID=${playerID}`
     }
 
     async function leaveGame(){

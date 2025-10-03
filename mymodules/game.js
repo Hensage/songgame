@@ -167,12 +167,14 @@ class game{
 
         if (this.playlistURL == '') {
             playing=true
-            this.playlist.forEach((song) => {
-                if (playerID === song.playerID) {
-                    theirSong.push(song);
-                }
-            })
+
         }
+        this.playlist.forEach((song) => {
+            if (playerID === song.playerID) {
+                theirSong.push(song);
+            }
+        })
+
         return {
             validGame:true,
             isPlaying:playing,
@@ -202,10 +204,9 @@ class game{
             await this.addToPlaylist(playlistData.data.id,query)
             this.playlistURL = playlistData.data.external_urls.spotify
         }else{
-            this.playlistURL = query;
-            console.log(query)
+            this.playlistURL = "google.com";
+            console.log(this.playlistURL)
         }
-        this.playlist=[]
         return this.playlistURL;
     }
 
