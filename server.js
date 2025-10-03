@@ -112,9 +112,13 @@ app.get("/getGames", (req, res) => {
     games.forEach((game) => {
         if (game.playlistURL=="") {
             if (game.isHost(req.query.playerID)) {
-                livegames.yourGame = game;
+                let tmpGame = {...game};
+                tmpGame.ticker = null;
+                livegames.yourGame = tmpGame;
             }else{
-                livegames.otherGames.push(game);
+                let tmpGame = {...game};
+                tmpGame.ticker = null;
+                livegames.otherGames.push(tmpGame);
             }
         }
     });
