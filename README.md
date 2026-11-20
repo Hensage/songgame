@@ -2,7 +2,7 @@
 
 A party game for Spotify. One person hosts a game, everyone else joins from their
 phone and adds a few songs, and the host turns the result into a shuffled Spotify
-playlist that interleaves everyone's picks.
+playlist that interleaves everyone's picks. 
 
 ## How it works
 
