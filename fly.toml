@@ -8,6 +8,10 @@ primary_region = 'lhr'
 
 [build]
 
+[env]
+  GAMES_FILE = "/data/games.json"
+  SPOTIFY_REDIRECT_URI = "https://songgame.fly.dev/callback"
+
 [http_service]
   internal_port = 3000
   force_https = true

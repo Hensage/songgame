@@ -33,6 +33,20 @@
     margin-right: 15px;
 }
 
+.explicit-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 4px;
+    border-radius: 2px;
+    background-color: #a7a7a7;
+    color: #121212;
+    font-size: 0.65em;
+    font-weight: 700;
+    line-height: 1.4;
+    vertical-align: middle;
+    user-select: none;
+}
+
 /* width */
 ::-webkit-scrollbar {
     width: 10px;
