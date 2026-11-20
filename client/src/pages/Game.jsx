@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../components/Button.jsx';
 import { Modal } from '../components/Modal.jsx';
-import { Panel } from '../components/Panel.jsx';
+import { ArrowsOut, PaperPlaneTilt, SignOut, Trash } from '@phosphor-icons/react';
 import { ProgressBar } from '../components/ProgressBar.jsx';
-import { RadarChart } from '../components/RadarChart.jsx';
+import { GenreVisuals } from '../components/GenreVisuals.jsx';
 import { SongRow } from '../components/SongRow.jsx';
 import { usePolling } from '../hooks/usePolling.js';
-import { STUB_GENRE_COUNTS } from '../lib/stubGenreCounts.js';
 import { AddSongModal } from './AddSongModal.jsx';
 import './Game.scss';
 
@@ -22,26 +21,13 @@ async function attempt(label, action) {
   }
 }
 
-function useLobbyAudio() {
-  useEffect(() => {
-    if (!isPixel()) return undefined;
-
-    const audio = new Audio('/Lobby.mp3');
-    audio.loop = true;
-    // Browsers block autoplay until the user interacts; ignore.
-    audio.play().catch(() => {});
-
-    return () => audio.pause();
-  }, []);
-}
-
 function CountsModal({ view, onClose }) {
   return (
     <Modal
       title="Player song counts"
       onClose={onClose}
       footer={
-        <Button variant="danger" onClick={onClose}>
+        <Button variant="secondary" onClick={onClose}>
           Close
         </Button>
       }
@@ -58,9 +44,7 @@ function CountsModal({ view, onClose }) {
         </div>
       ))}
 
-      <h2 className="count-chart__title">Songs by genre</h2>
-      <RadarChart title="Songs by genre" data={STUB_GENRE_COUNTS} />
-      <p className="faint count-chart__note">Sample data</p>
+      <GenreVisuals data={view.genreCounts ?? []} />
     </Modal>
   );
 }
@@ -77,7 +61,7 @@ function EndGameModal({ playlistLink, onClose }) {
       dismissible={false}
       footer={
         <>
-          <Button variant="danger" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
           {playlistLink && <Button onClick={() => window.open(playlistLink, '_blank', 'noopener')}>Link to Spotify</Button>}
@@ -95,8 +79,6 @@ export function Game({ api, info, onExit }) {
   const [ended, setEnded] = useState(false);
   const [playlistLink, setPlaylistLink] = useState('');
   const [modal, setModal] = useState(null);
-
-  useLobbyAudio();
 
   const refresh = usePolling(async () => {
     const next = await api.getUpdate();
@@ -157,54 +139,52 @@ export function Game({ api, info, onExit }) {
 
   return (
     <main className="page game">
-      <Panel className="game__header">
-        <img className="game__logo" src="/songgameLogo.png" alt="Song Game" />
-        <div className="game__host">The host is {info.hostName}</div>
-        <Button variant="danger" onClick={() => setModal('leave')}>
-          Leave Game
+      <header className="game__header">
+        <h1 className="game__title">{info.hostName}'s game</h1>
+        <Button variant="secondary" size="small" icon={SignOut} onClick={() => setModal('leave')}>
+          Leave game
         </Button>
-      </Panel>
+      </header>
 
-      <Panel>
-        <div className="row">
-          <div className="game__stat">
-            Player count
-            <div className="faint">{view?.playerCount ?? 0}</div>
-          </div>
-          <Button variant="danger" aria-label="Player song counts" disabled={!view} onClick={() => setModal('counts')}>
-            <img className="game__expand-icon" src="/expand.svg" alt="" />
-          </Button>
-          <div className="game__stat">
-            Song Count
-            <div className="faint">{view ? `${view.count} / ${view.playerCount * view.songsPerPerson}` : '0 / 0'}</div>
-          </div>
+      <div className="row game__stats">
+        <div className="game__stat">
+          Player count
+          <div className="faint">{view?.playerCount ?? 0}</div>
         </div>
-      </Panel>
+        <Button variant="icon" aria-label="Player song counts" disabled={!view} onClick={() => setModal('counts')}>
+          <ArrowsOut size={24} />
+        </Button>
+        <div className="game__stat">
+          Song count
+          <div className="faint">{view ? `${view.count} / ${view.playerCount * view.songsPerPerson}` : '0 / 0'}</div>
+        </div>
+      </div>
 
-      <Panel>
-        <div className="bold">
-          Your songs
-          <div className="faint">
+      <section className="game__songs">
+        <div className="game__songs-header">
+          <h2 className="game__songs-title">Your songs</h2>
+          <span className="faint">
             {items.length} / {songsPerPerson}
-          </div>
+          </span>
         </div>
+        {items.length === 0 && <p className="faint game__empty">Songs you add will show up here.</p>}
         <div className="stack scroll-list">
           {items.map((song) => (
             <SongRow key={song.id} song={song} onRemove={removeSong} />
           ))}
         </div>
-      </Panel>
+      </section>
 
-      <Button size="large" className="game__add" disabled={items.length >= songsPerPerson} onClick={() => setModal('add')}>
+      <Button className="game__add" disabled={items.length >= songsPerPerson} onClick={() => setModal('add')}>
         Add new song
       </Button>
 
       {info.isPlayerHost && (
         <div className="row game__host-actions">
-          <Button variant="danger" grow onClick={() => setModal('clear')}>
+          <Button variant="secondary" grow icon={Trash} onClick={() => setModal('clear')}>
             Clear all songs
           </Button>
-          <Button grow onClick={() => setModal('submit')}>
+          <Button variant="secondary" grow icon={PaperPlaneTilt} onClick={() => setModal('submit')}>
             Submit to spotify
           </Button>
         </div>
@@ -213,6 +193,7 @@ export function Game({ api, info, onExit }) {
       {modal === 'add' && (
         <AddSongModal
           api={api}
+          filters={{ genres: info.genres, era: info.era }}
           onClose={closeModal}
           onAdded={() => {
             closeModal();
@@ -229,7 +210,7 @@ export function Game({ api, info, onExit }) {
           onClose={closeModal}
           footer={
             <>
-              <Button variant="danger" onClick={closeModal}>
+              <Button variant="secondary" onClick={closeModal}>
                 No
               </Button>
               <Button
@@ -255,7 +236,7 @@ export function Game({ api, info, onExit }) {
             <>
               <Button onClick={closeModal}>No</Button>
               <Button
-                variant="danger"
+                variant="secondary"
                 onClick={() => {
                   closeModal();
                   clearSongs();
@@ -275,11 +256,11 @@ export function Game({ api, info, onExit }) {
           footer={
             <>
               <Button onClick={closeModal}>Stay</Button>
-              <Button variant="danger" onClick={leaveGame}>
+              <Button variant="secondary" onClick={leaveGame}>
                 Leave
               </Button>
               {info.isPlayerHost && (
-                <Button variant="danger" onClick={closeGame}>
+                <Button variant="secondary" onClick={closeGame}>
                   Leave &amp; close
                 </Button>
               )}

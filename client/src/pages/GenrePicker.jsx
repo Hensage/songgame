@@ -1,29 +1,47 @@
 import { useMemo, useState } from 'react';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import './NewGameModal.scss';
 
 const MAX_OPTIONS = 200;
 
-/** A text box that suggests matching Spotify genres as you type. */
-export function GenrePicker({ value, genres, onChange }) {
+/**
+ * A text box that suggests matching Spotify genres as you type. Choosing a
+ * suggestion, or pressing Enter on an exact match, calls `onPick`.
+ * Genres in `excluded` (already chosen) are left out of the suggestions.
+ */
+export function GenrePicker({ value, genres, excluded = [], disabled = false, onChange, onPick }) {
   const [open, setOpen] = useState(false);
 
   const matches = useMemo(() => {
-    const term = value.toLowerCase();
-    return term ? genres.filter((genre) => genre.toLowerCase().includes(term)).slice(0, MAX_OPTIONS) : [];
-  }, [genres, value]);
+    const term = value.trim().toLowerCase();
+    if (!term) return [];
+    return genres.filter((genre) => genre.includes(term) && !excluded.includes(genre)).slice(0, MAX_OPTIONS);
+  }, [genres, excluded, value]);
+
+  function pick(genre) {
+    onPick(genre);
+    setOpen(false);
+  }
 
   return (
     <div className="genre-picker">
+      <MagnifyingGlass className="genre-picker__icon" size={22} weight="bold" aria-hidden="true" />
       <input
-        type="text"
+        type="search"
+        enterKeyHint="search"
         className="genre-picker__input"
-        placeholder="Search..."
+        placeholder={disabled ? 'Remove a genre to add another' : 'Search...'}
         aria-label="Search genres"
         autoComplete="off"
+        disabled={disabled}
         value={value}
         onChange={(event) => {
           onChange(event.target.value);
           setOpen(true);
+        }}
+        onKeyDown={(event) => {
+          const term = value.trim().toLowerCase();
+          if (event.key === 'Enter' && genres.includes(term) && !excluded.includes(term)) pick(term);
         }}
         onBlur={() => setOpen(false)}
       />
@@ -34,11 +52,10 @@ export function GenrePicker({ value, genres, onChange }) {
               <button
                 type="button"
                 className="genre-picker__option"
-                // Select on mousedown so the input's blur doesn't close the menu first.
+                // Pick on mousedown so the input's blur doesn't close the menu first.
                 onMouseDown={(event) => {
                   event.preventDefault();
-                  onChange(genre);
-                  setOpen(false);
+                  pick(genre);
                 }}
               >
                 {genre}

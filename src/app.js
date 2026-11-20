@@ -8,6 +8,26 @@ const DEFAULT_SONGS_PER_PERSON = 3;
 const MIN_SONGS_PER_PERSON = 1;
 const MAX_SONGS_PER_PERSON = 10;
 const FIRST_GAME_YEAR = 1950;
+const GENRE_COUNT_TTL_MS = 10 * 60 * 1000;
+const GENRE_COUNT_CACHE_SIZE = 500;
+const MAX_GENRE_LENGTH = 80;
+const MAX_GENRES = 5;
+
+// Stub counts are fake: they grow with the genre names' length so the lobby can
+// show both its "few songs" and "plenty of songs" states without Spotify.
+function stubMatchCount(genres) {
+  return genres.length === 0 ? 100000 : genres.reduce((total, genre) => total + genre.length * 20, 0);
+}
+
+/** Genres from a repeated `genre` query value: trimmed, lower-case, unique, and capped. */
+function readGenres(value) {
+  const values = Array.isArray(value) ? value : [value];
+  const genres = values
+    .filter((item) => typeof item === 'string')
+    .map((item) => item.trim().toLowerCase().slice(0, MAX_GENRE_LENGTH))
+    .filter(Boolean);
+  return [...new Set(genres)].slice(0, MAX_GENRES);
+}
 
 function readString(value) {
   return typeof value === 'string' ? value : null;
@@ -35,14 +55,15 @@ function toGameSummary(game) {
     hostName: game.hostName,
     songsPerPerson: game.songsPerPerson,
     era: game.era,
-    genre: game.genre,
+    genres: game.genres,
     playerCount: game.players.length,
   };
 }
 
-export function createApp({ config, store, spotify, createGame }) {
+export function createApp({ config, store, spotify, createGame, lookupGenres = async () => [] }) {
   const app = express();
   const loginStates = new Map();
+  const genreCounts = new Map();
 
   app.disable('x-powered-by');
   app.use(express.json());
@@ -146,6 +167,25 @@ export function createApp({ config, store, spotify, createGame }) {
     res.sendStatus(200);
   });
 
+  // Lets the host see whether a genre and era combination has songs before signing in.
+  app.get('/genreCheck', async (req, res) => {
+    const genres = readGenres(req.query.genre);
+    const era = normalizeEra(readString(req.query.era));
+    const key = `${[...genres].sort().join(',')}|${era}`;
+
+    const cached = genreCounts.get(key);
+    if (cached && cached.expiresAt > Date.now()) {
+      res.json({ total: cached.total });
+      return;
+    }
+
+    const total = config.stub ? stubMatchCount(genres) : await spotify.countTracks({ era, genres });
+
+    if (genreCounts.size >= GENRE_COUNT_CACHE_SIZE) genreCounts.delete(genreCounts.keys().next().value);
+    genreCounts.set(key, { total, expiresAt: Date.now() + GENRE_COUNT_TTL_MS });
+    res.json({ total });
+  });
+
   app.get('/login', (req, res) => {
     const playerID = requirePlayerId(req, res);
     if (!playerID) return;
@@ -157,7 +197,7 @@ export function createApp({ config, store, spotify, createGame }) {
       playerID,
       songCount: normalizeSongCount(req.query.songCount),
       era: normalizeEra(readString(req.query.era)),
-      genre: readString(req.query.genre)?.trim() ?? '',
+      genres: readGenres(req.query.genre),
       createdAt: Date.now(),
     });
 
@@ -193,7 +233,7 @@ export function createApp({ config, store, spotify, createGame }) {
         refreshToken: 'REFRESHTOKEN',
         songsPerPerson: login.songCount,
         era: login.era,
-        genre: login.genre,
+        genres: login.genres,
       });
     } else {
       if (readString(req.query.error)) {
@@ -218,7 +258,7 @@ export function createApp({ config, store, spotify, createGame }) {
         refreshToken: tokens.refreshToken,
         songsPerPerson: login.songCount,
         era: login.era,
-        genre: login.genre,
+        genres: login.genres,
       });
     }
 
@@ -253,7 +293,7 @@ export function createApp({ config, store, spotify, createGame }) {
       accessToken: game.accessToken,
       query,
       era: game.era,
-      genre: game.genre,
+      genres: game.genres,
     });
     res.json(items);
   });
@@ -273,6 +313,8 @@ export function createApp({ config, store, spotify, createGame }) {
       hostName: game.hostName,
       isPlayerHost: game.isHost(playerID),
       songsPerPerson: game.songsPerPerson,
+      era: game.era,
+      genres: game.genres,
     });
   });
 
@@ -353,7 +395,7 @@ export function createApp({ config, store, spotify, createGame }) {
     res.sendStatus(200);
   });
 
-  app.post('/add', (req, res) => {
+  app.post('/add', async (req, res) => {
     const playerID = requirePlayerId(req, res);
     if (!playerID) return;
 
@@ -371,6 +413,8 @@ export function createApp({ config, store, spotify, createGame }) {
 
     song.playerID = playerID;
     const result = game.addSong(song);
+    // The song object is the one stored in the playlist, so the genres attach to it.
+    if (result.ok) song.genres = await lookupGenres(song, game.accessToken);
     store.save();
     res.status(result.ok ? 200 : 409).send(result.message);
   });

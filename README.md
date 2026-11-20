@@ -114,13 +114,14 @@ browser and stored in `localStorage`; they are not authenticated.
 | `POST` | `/joinGame?gameID=` | Join a game (leaves the current one first) |
 | `POST` | `/leaveGame` | Leave the current game |
 | `POST` | `/closeGame` | Host: close the game. Player: leave |
-| `GET` | `/login` | Start the Spotify authorization flow |
+| `GET` | `/genreCheck?genre=&era=` | How many songs Spotify has for an era and any of the genres (repeat `genre` for several, up to 5; with several it is an upper bound). Uses an app token, so no sign-in; cached for 10 minutes |
+| `GET` | `/login` | Start the Spotify authorization flow (`genre` can repeat, up to 5; a song may match any of them) |
 | `GET` | `/callback` | Spotify OAuth callback |
 | `GET` | `/search?query=` | Search the host's era/genre-filtered catalogue |
-| `GET` | `/loadinfo` | Host name, host flag, song limit |
-| `GET` | `/update` | Poll game state and the player's songs |
+| `GET` | `/loadinfo` | Host name, host flag, song limit, era and genre filters |
+| `GET` | `/update` | Poll game state, the player's songs, and `genreCounts` for the whole playlist |
 | `POST` | `/remove?songID=` | Remove one of the player's songs |
-| `POST` | `/add` | Add a Spotify track (JSON body) |
+| `POST` | `/add` | Add a Spotify track (JSON body). Also looks up the first artist's genres and stores them on the song |
 | `POST` | `/clear` | Host: clear all songs |
 | `POST` | `/submit` | Host: build the playlist |
 

@@ -7,6 +7,25 @@ export const SONG_ALREADY_EXISTS = 'This song is already in the playlist';
 const DEFAULT_GAME_LIFETIME_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_TOKEN_LIFETIME_MS = 55 * 60 * 1000;
 
+export const NO_GENRE_LABEL = 'No genre listed';
+
+/**
+ * How many songs fall under each genre, most common first. A song counts once toward
+ * every genre it has, and songs with none are grouped under `NO_GENRE_LABEL`.
+ */
+export function countGenres(playlist) {
+  const counts = new Map();
+
+  for (const song of playlist) {
+    const genres = Array.isArray(song.genres) && song.genres.length > 0 ? song.genres : [NO_GENRE_LABEL];
+    for (const genre of new Set(genres)) counts.set(genre, (counts.get(genre) ?? 0) + 1);
+  }
+
+  return [...counts]
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
+}
+
 export class Game {
   constructor({
     hostPlayerID,
@@ -16,7 +35,7 @@ export class Game {
     refreshToken,
     songsPerPerson = 3,
     era = '',
-    genre = '',
+    genres = [],
     playlist = [],
     activePlayers = [],
     players = [],
@@ -49,7 +68,7 @@ export class Game {
 
     this.songsPerPerson = Number.isInteger(songLimit) && songLimit > 0 ? songLimit : 3;
     this.era = era;
-    this.genre = genre;
+    this.genres = genres;
     this.kill = kill;
 
     this.countCounts = new Array(this.songsPerPerson + 1).fill(0);
@@ -69,7 +88,8 @@ export class Game {
       refreshToken: data.refreshToken,
       songsPerPerson: data.songsPerPerson,
       era: data.era,
-      genre: data.genre,
+      // Games saved before multi-select stored a single `genre` string.
+      genres: Array.isArray(data.genres) ? data.genres : data.genre ? [data.genre] : [],
       playlist: Array.isArray(data.playlist) ? data.playlist : [],
       activePlayers: Array.isArray(data.activePlayers) ? data.activePlayers : [],
       players: Array.isArray(data.players) ? data.players : [],
@@ -101,7 +121,7 @@ export class Game {
       kill: this.kill,
       songsPerPerson: this.songsPerPerson,
       era: this.era,
-      genre: this.genre,
+      genres: this.genres,
     };
   }
 
@@ -169,6 +189,7 @@ export class Game {
       songsPerPerson: this.songsPerPerson,
       count: this.playlist.length,
       countCounts: this.countCounts,
+      genreCounts: countGenres(this.playlist),
       playlistURL: this.playlistURL,
       items: isPlaying ? this.playlist.filter((song) => song.playerID === playerID) : [],
     };

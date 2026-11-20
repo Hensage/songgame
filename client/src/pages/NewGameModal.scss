@@ -20,6 +20,34 @@
     }
   }
 
+  &__hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.875rem;
+  }
+
+  // Space between the genre chips and the "More specific genre" button.
+  &__more {
+    margin-top: 1rem;
+  }
+
+  // A plain line of coloured text under the filters, with no box around it.
+  &__match {
+    margin: 0;
+    font-size: 13px;
+
+    &--plenty {
+      color: $primary;
+    }
+
+    &--few {
+      color: #ffda6a;
+    }
+
+    &--none {
+      color: #f3727f;
+    }
+  }
+
   &__range {
     display: block;
     width: 100%;
@@ -37,14 +65,32 @@
   &__input {
     width: 100%;
     height: 44px;
-    padding: 0 0.75rem;
+    padding: 0 1rem 0 2.75rem;
     -webkit-appearance: none;
     appearance: none;
-    background: $accent;
-    border: 1px solid transparent;
-    border-radius: $radius;
+    background: $text; // white, like the Spotify app's search bar
+    border: 0;
+    border-radius: $radius-sm;
     color: $text-on-accent;
     font-size: 16px; // anything smaller makes iOS zoom in on focus
+
+    &::placeholder {
+      color: $placeholder;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary;
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    top: 22px;
+    left: 0.75rem;
+    z-index: 1;
+    color: $text-on-accent;
+    pointer-events: none;
+    transform: translateY(-50%);
   }
 
   &__menu {
@@ -55,9 +101,9 @@
     margin: 2px 0 0;
     padding: 0.5rem 0;
     overflow-y: auto;
-    background: $accent;
-    border-radius: $radius;
-    color: $text-on-accent;
+    background: $surface-raised;
+    border-radius: $radius-md;
+    color: $text;
     list-style: none;
     text-align: left;
   }
@@ -74,7 +120,7 @@
     cursor: pointer;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.12);
+      background: $surface-hover;
     }
   }
 }

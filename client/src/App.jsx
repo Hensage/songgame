@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from './components/Button.jsx';
-import { Panel } from './components/Panel.jsx';
+import { Spinner } from './components/Spinner.jsx';
 import { createApi } from './lib/api.js';
 import { getPlayerId } from './lib/identity.js';
 import { Game } from './pages/Game.jsx';
@@ -35,10 +35,8 @@ export function App() {
   if (failed && !info) {
     return (
       <main className="page">
-        <Panel padded>
-          <p>Could not reach the server.</p>
-          <Button onClick={refreshInfo}>Try again</Button>
-        </Panel>
+        <p>Could not reach the server.</p>
+        <Button onClick={refreshInfo}>Try again</Button>
       </main>
     );
   }
@@ -46,7 +44,7 @@ export function App() {
   if (!info) {
     return (
       <main className="page">
-        <Panel padded>Loading</Panel>
+        <Spinner />
       </main>
     );
   }

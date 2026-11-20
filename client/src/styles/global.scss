@@ -71,10 +71,11 @@ input {
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right))
-    max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
-  gap: 0.5rem;
-  text-align: center;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  gap: 0.75rem;
+  text-align: left;
+  container-type: inline-size; // lets buttons collapse to icons when the page is squashed
 }
 
 .page__logo {

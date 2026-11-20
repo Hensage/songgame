@@ -1,0 +1,28 @@
+.visuals {
+  margin-top: 1.5rem;
+
+  &__title {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &__switcher .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__chart {
+    margin-top: 1rem;
+  }
+
+  &__empty {
+    margin: 0;
+  }
+
+  &__note {
+    margin: 0.75rem 0 0;
+    font-size: 0.8rem;
+  }
+}

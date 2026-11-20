@@ -3,37 +3,53 @@
 .game {
   min-height: 100vh;
 
+  // A bold 24px title on the left and a small action on the right, with no card behind them.
   &__header {
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
   }
 
-  &__logo {
-    width: 40px;
-    height: 40px;
-  }
-
-  &__host {
-    flex: 1;
+  &__title {
+    min-width: 0;
+    margin: 0;
+    font-size: 1.5rem;
     font-weight: 700;
+  }
+
+  &__stats {
+    justify-content: space-between;
   }
 
   &__stat {
     flex: 1;
     font-weight: 700;
+    text-align: center;
   }
 
-  &__count-button {
-    flex: 0 0 auto;
-
-    img {
-      height: 25px;
-    }
+  // The player's own list: a heading row, then flat rows with no card behind them.
+  &__songs {
+    width: 100%;
   }
 
-  &__expand-icon {
-    height: 25px;
+  &__songs-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  &__songs-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &__empty {
+    margin: 0.5rem 0;
+    font-size: 13px;
   }
 
   &__add {
@@ -51,39 +67,50 @@
   flex-direction: column;
   gap: 0.75rem;
 
+  // A white search bar with the magnifier inside it, like the Spotify app's.
   &__search {
+    position: relative;
     flex: none;
-    display: flex;
 
     input {
-      flex: 1;
-      min-width: 0;
+      width: 100%;
       height: 44px;
-      padding: 0 0.75rem;
+      padding: 0 1rem 0 2.75rem;
       -webkit-appearance: none;
       appearance: none;
       background: $text;
-      border: 1px solid transparent;
-      border-radius: $radius 0 0 $radius;
+      border: 0;
+      border-radius: $radius-sm;
       color: $text-on-accent;
       font-size: 16px; // anything smaller makes iOS zoom in on focus
-    }
 
-    .btn {
-      width: 52px;
-      padding: 0;
-      border-radius: 0 $radius $radius 0;
-    }
+      &::placeholder {
+        color: $placeholder;
+      }
 
-    img {
-      height: 25px;
+      &:focus-visible {
+        outline: 2px solid $primary;
+      }
     }
+  }
+
+  &__search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    color: $text-on-accent;
+    pointer-events: none;
+    transform: translateY(-50%);
   }
 
   &__results {
     max-height: 50dvh;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  &__empty {
+    margin: 1rem 0 0;
   }
 
   &__loader {
@@ -116,17 +143,6 @@
   }
 }
 
-.count-chart {
-  &__title {
-    margin: 1.5rem 0 0.5rem;
-    font-size: 1.1rem;
-  }
-
-  &__note {
-    margin: 0.25rem 0 0;
-    font-size: 0.8rem;
-  }
-}
 
 .end-game__photo {
   width: 300px;

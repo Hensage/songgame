@@ -1,0 +1,22 @@
+@use '../styles/variables' as *;
+
+.donut {
+  &__ring {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  &__total {
+    fill: $text;
+    font-size: 30px;
+    font-weight: 700;
+  }
+
+  &__caption {
+    fill: $text-faint;
+    font-size: 13px;
+  }
+}

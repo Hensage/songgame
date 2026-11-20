@@ -28,11 +28,35 @@ export function buildSearchQuery({ query, era, genre }) {
   const yearRange = String(era ?? '').replace(/[^0-9-]/g, '');
   if (yearRange) parts.push(`year:${yearRange}`);
   if (genre) parts.push(`genre:${quote(genre)}`);
-  parts.push(quote(query));
+  const text = String(query ?? '').trim();
+  if (text) parts.push(quote(text));
   return parts.join(' ');
 }
 
+/** Takes one track from each list in turn, skipping repeats, until `limit` are chosen. */
+export function interleaveTracks(lists, limit) {
+  const merged = [];
+  const seen = new Set();
+
+  for (let index = 0; merged.length < limit && lists.some((list) => index < list.length); index += 1) {
+    for (const list of lists) {
+      const track = list[index];
+      if (!track || seen.has(track.id)) continue;
+
+      seen.add(track.id);
+      merged.push(track);
+      if (merged.length >= limit) break;
+    }
+  }
+
+  return merged;
+}
+
+const APP_TOKEN_MARGIN_MS = 30 * 1000;
+
 export class SpotifyClient {
+  #appToken = null;
+
   constructor({ clientId, clientSecret, redirectUri, fetchImpl = globalThis.fetch }) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
@@ -71,19 +95,68 @@ export class SpotifyClient {
     };
   }
 
+  /**
+   * A token for the app itself (client credentials), for requests made before
+   * anyone has signed in. It can search but cannot touch a user's account.
+   */
+  async getAppToken() {
+    if (this.#appToken && this.#appToken.expiresAt - APP_TOKEN_MARGIN_MS > Date.now()) {
+      return this.#appToken.value;
+    }
+
+    const data = await this.#requestTokens({ grant_type: 'client_credentials' });
+    this.#appToken = { value: data.access_token, expiresAt: Date.now() + data.expires_in * 1000 };
+    return this.#appToken.value;
+  }
+
+  /**
+   * How many tracks match the era and any of the genres, according to Spotify.
+   * Tracks in more than one selected genre are counted once per genre, so with
+   * several genres this is an upper bound.
+   */
+  async countTracks({ era, genres = [] }) {
+    const accessToken = await this.getAppToken();
+    const tracks = await Promise.all(
+      (genres.length > 0 ? genres : ['']).map((genre) => this.#searchOnce({ accessToken, era, genre, limit: 1 })),
+    );
+    return tracks.reduce((total, result) => total + (result?.total ?? 0), 0);
+  }
+
+  /** The genres Spotify lists for an artist, lower-case. Genres belong to artists, not tracks. */
+  async getArtistGenres({ accessToken, artistId }) {
+    const artist = await this.#apiRequest(`/artists/${encodeURIComponent(artistId)}`, { accessToken });
+    return Array.isArray(artist.genres) ? artist.genres.map((genre) => String(genre).toLowerCase()) : [];
+  }
+
   async getCurrentUser(accessToken) {
     const profile = await this.#apiRequest('/me', { accessToken });
     return { id: profile.id, displayName: profile.display_name || profile.id };
   }
 
-  async searchTracks({ accessToken, query, era, genre }) {
+  /**
+   * Finds tracks that match the era and ANY of the genres. Spotify's genre filter
+   * takes one genre, so this searches once per genre and mixes the results.
+   */
+  async searchTracks({ accessToken, query, era, genres = [] }) {
+    const results = await Promise.all(
+      (genres.length > 0 ? genres : ['']).map((genre) =>
+        this.#searchOnce({ accessToken, query, era, genre, limit: SEARCH_LIMIT }),
+      ),
+    );
+    return interleaveTracks(
+      results.map((result) => result?.items ?? []),
+      SEARCH_LIMIT,
+    );
+  }
+
+  async #searchOnce({ accessToken, query, era, genre, limit }) {
     const params = new URLSearchParams({
       q: buildSearchQuery({ query, era, genre }),
       type: 'track',
-      limit: String(SEARCH_LIMIT),
+      limit: String(limit),
     });
     const data = await this.#apiRequest(`/search?${params}`, { accessToken });
-    return data.tracks?.items ?? [];
+    return data.tracks;
   }
 
   async createPlaylist({ accessToken, name, description }) {

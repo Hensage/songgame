@@ -1,4 +1,11 @@
-const toQuery = (params) => new URLSearchParams(params).toString();
+// Array values become repeated keys, e.g. { genre: ['rock', 'pop'] } -> genre=rock&genre=pop.
+function toQuery(params) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    for (const item of Array.isArray(value) ? value : [value]) query.append(key, item);
+  }
+  return query.toString();
+}
 
 const request = (path, params, options) => fetch(`${path}?${toQuery(params)}`, options);
 
@@ -9,6 +16,13 @@ export function createApi(playerID) {
   return {
     loadInfo: async () => (await request('/loadinfo', { playerID })).json(),
     getUpdate: async () => (await request('/update', { playerID })).json(),
+
+    /** How many songs Spotify has for any of the genres in an era; works before anyone has signed in. */
+    async checkGenres(genres, era, { signal } = {}) {
+      const response = await request('/genreCheck', { genre: genres, era }, { signal });
+      if (!response.ok) throw new Error(`Genre check failed (${response.status})`);
+      return (await response.json()).total;
+    },
 
     async getGames() {
       const response = await request('/getGames', { playerID });

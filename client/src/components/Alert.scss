@@ -1,7 +1,12 @@
+// An inline message: a warning icon and a line of text, with no box around it.
 .alert {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 5px;
-  background: #664d03;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: #ffda6a;
+  font-size: 13px;
+
+  svg {
+    flex: none;
+  }
 }

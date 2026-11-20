@@ -1,0 +1,17 @@
+@use '../styles/variables' as *;
+
+.stacked {
+  &__bar {
+    display: flex;
+    gap: 2px;
+    height: 28px;
+    overflow: hidden;
+    background: $background;
+    border-radius: $radius-pill;
+  }
+
+  &__segment {
+    flex-basis: 0;
+    min-width: 4px;
+  }
+}

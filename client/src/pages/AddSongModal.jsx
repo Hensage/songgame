@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Alert } from '../components/Alert.jsx';
 import { Button } from '../components/Button.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { SuggestionRow } from '../components/SongRow.jsx';
 import { Spinner } from '../components/Spinner.jsx';
+import { describeFilters } from '../lib/filters.js';
 import './Game.scss';
 
 const ERROR_VISIBLE_MS = 1000;
 
-export function AddSongModal({ api, onClose, onAdded }) {
+export function AddSongModal({ api, filters, onClose, onAdded }) {
   const [text, setText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [error, setError] = useState('');
   const errorTimer = useRef();
 
@@ -27,13 +30,18 @@ export function AddSongModal({ api, onClose, onAdded }) {
     if (searching) return;
 
     setSearching(true);
+    setSearched(false);
     setSuggestions([]);
     setError('');
 
     try {
       const result = await api.search(text);
-      if (result.ok) setSuggestions(result.songs);
-      else showError(result.message);
+      if (result.ok) {
+        setSuggestions(result.songs);
+        setSearched(true);
+      } else {
+        showError(result.message);
+      }
     } catch (searchError) {
       console.error('Song search failed', searchError);
       showError('Could not search for songs');
@@ -65,7 +73,7 @@ export function AddSongModal({ api, onClose, onAdded }) {
       onClose={onClose}
       closeDisabled={searching}
       footer={
-        <Button variant="danger" disabled={searching} onClick={onClose}>
+        <Button variant="secondary" disabled={searching} onClick={onClose}>
           Close
         </Button>
       }
@@ -73,8 +81,11 @@ export function AddSongModal({ api, onClose, onAdded }) {
       <div className="add-song">
         {error && <Alert>{error}</Alert>}
         <div className="add-song__search">
+          <MagnifyingGlass className="add-song__search-icon" size={22} weight="bold" aria-hidden="true" />
           <input
-            type="text"
+            type="search"
+            enterKeyHint="search"
+            aria-label="Song title"
             placeholder="Song title"
             autoComplete="off"
             autoFocus
@@ -85,11 +96,14 @@ export function AddSongModal({ api, onClose, onAdded }) {
               if (event.key === 'Enter') search();
             }}
           />
-          <Button disabled={searching} onClick={search} aria-label="Search">
-            <img src="/search.svg" alt="" />
-          </Button>
         </div>
         {searching && <Spinner className="add-song__loader" />}
+        {searched && suggestions.length === 0 && (
+          <p className="add-song__empty faint">
+            No songs found
+            {describeFilters(filters) && ` for ${describeFilters(filters)}`}. Try different words.
+          </p>
+        )}
         <div className="add-song__results">
           {suggestions.map((song) => (
             <SuggestionRow key={song.id} song={song} onSelect={add} />

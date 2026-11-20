@@ -1,6 +1,7 @@
 import { createApp } from './app.js';
 import { Game } from './game.js';
 import { GameStore } from './gameStore.js';
+import { createGenreLookup } from './genres.js';
 import { SpotifyClient } from './spotify.js';
 
 /**
@@ -22,7 +23,8 @@ export function createServices(config, { logger = console } = {}) {
     logger,
     sweepIntervalMs: config.sweepIntervalMs,
   });
-  const app = createApp({ config, store, spotify, createGame });
+  const lookupGenres = createGenreLookup({ spotify, stub: config.stub, logger });
+  const app = createApp({ config, store, spotify, createGame, lookupGenres });
 
   return { app, store, spotify, createGame };
 }

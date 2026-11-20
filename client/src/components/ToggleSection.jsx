@@ -8,7 +8,7 @@ export function ToggleSection({ label, children }) {
 
   return (
     <div className="toggle-section">
-      <Button aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+      <Button variant="outline" size="small" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
         {label}
       </Button>
       {open && <div className="toggle-section__content">{children}</div>}
