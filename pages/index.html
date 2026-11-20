@@ -1,24 +1,26 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Song Game</title>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="custom.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/custom.css">
 </head>
 <body style="color: white;">
     <div class="container vh-100 d-flex flex-column align-items-center p-2">
         <div class="row container d-flex align-items-center text-center p-1 m-1 highlightBox">
             <div class="d-flex align-items-center">
-                <img class="align-middle align-items-center" style="height:40px;width:40px; margin-right: 15px;" src="songgameLogo.png">
+                <img class="align-middle align-items-center" style="height:40px;width:40px; margin-right: 15px;" src="/songgameLogo.png" alt="Song Game">
                 <div id="hostname" class="align-middle align-items-center fw-bold" style="flex-grow: 1;">The host is</div>
-                <button class="btn btn-Danger" data-bs-toggle="modal" data-bs-target="#leaveModal">Leave Game</button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#leaveModal">Leave Game</button>
             </div>
         </div>
         <div class="row container d-flex flex-column align-items-center text-center p-1 m-1 highlightBox">
             <div class="adminonly flexElement row d-none">
-                <button data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-Danger align-items-center">Clear all songs</button>
-                <button data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-Primary align-items-center">Submit to spotify</button>
+                <button type="button" data-bs-toggle="modal" data-bs-target="#clearModal" class="btn col btn-danger align-items-center">Clear all songs</button>
+                <button type="button" data-bs-toggle="modal" data-bs-target="#submitModal" class="btn col btn-primary align-items-center">Submit to spotify</button>
             </div>
             <div class="row">
                 <div class="col align-items-center text-center fw-bold">
@@ -26,8 +28,8 @@
                     <div id="playercount" class="faint">4</div>
                 </div>
                 <div class="col align-items-center justify-content-center d-flex">
-                    <button class="btn btn-Danger align-items-center" data-bs-toggle="modal" data-bs-target="#countModal">
-                        <img style="height: 25px" src="expand.svg"/>
+                    <button type="button" class="btn btn-danger align-items-center" data-bs-toggle="modal" data-bs-target="#countModal">
+                        <img style="height: 25px" src="/expand.svg" alt="Player song counts">
                     </button>
                 </div>
                 <div class="col align-items-center text-center fw-bold">
@@ -37,107 +39,101 @@
             </div>
         </div>
         <div class="row container align-items-center text-center p-1 m-1 highlightBox">
-            <div class="fw-bold" >
+            <div class="fw-bold">
                 Your songs
                 <div class="fs-6 fw-normal faint fw-light" id="yoursongcount">
                     0/0
                 </div>
             </div>
-            <div id="yoursongs" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
+            <div id="yoursongs" class="d-flex flex-column" style="color: white;overflow-y: scroll;max-height: 50vh;">
                 <div class="songBox d-none" id="examplesong">
-                    <img src="" alt="Thumbnail" class="song-thumbnail">
+                    <img alt="Thumbnail" class="song-thumbnail">
                     <div class="yoursonglabel" style="flex-grow: 1;">
                         <div class="songname fw-bold">Song Name</div>
                         <small class="songartist faint fw-light">Artist Name</small>
                     </div>
-                    <div><button onclick="remove(0)" class="btn btn-Danger">X</button></div>
+                    <div><button type="button" class="btn btn-danger">X</button></div>
                 </div>
             </div>
         </div>
         <div class="row container align-items-center text-center p-1 m-1">
-            <button class="btn btn-primary btn-lg align-items-center" id="addSongButton" data-bs-toggle="modal" data-bs-target="#addModal">Add new song</button>
+            <button type="button" class="btn btn-primary btn-lg align-items-center" id="addSongButton" data-bs-toggle="modal" data-bs-target="#addModal">Add new song</button>
         </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal fade" id="addModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h1 class="modal-title fs-5" id="addModalLabel">Add new song</h1>
-            <button id="addModalClose2" type="button" class="btn-close" style="background-color: white;" onclick="closeAddModal()" aria-label="Close"></button>
-            </div>
-            <div class="modal-body align-items-center text-center">
-                <div class="alert alert-warning" style="display: none;" role="alert" id="addModalError">Song already exists</div>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="songinput" style="background-color: white;" placeholder="Song title" autocomplete="off">
-                    <div class="input-group-append">
-                        <button id="searchbutton" type="button" onclick="searchSongs()" class="btn btn-primary">
-                            <img style="height: 25px" src="search.svg"/>
-                        </button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addModalLabel">Add new song</h1>
+                    <button type="button" id="addModalClose2" class="btn-close" style="background-color: white;" aria-label="Close"></button>
+                </div>
+                <div class="modal-body align-items-center text-center">
+                    <div class="alert alert-warning d-none" role="alert" id="addModalError">Song already exists</div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="songinput" style="background-color: white;" placeholder="Song title" autocomplete="off">
+                        <div class="input-group-append">
+                            <button type="button" id="searchbutton" class="btn btn-primary">
+                                <img style="height: 25px" src="/search.svg" alt="Search">
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="spinner-border text-light mt-5" id="searchloader" style="display: none;" role="status">
-                </div>
-                <div class="songBox clicksong d-none" id="exampleaddsong">
-                    <img src="" alt="Thumbnail" class="song-thumbnail">
-                    <div class="yoursonglabel" style="flex-grow: 1;">
-                        <div class="songname fw-bold">Song Name</div>
-                        <small class="songartist">Artist Name</small>
+                    <div class="spinner-border text-light mt-5 d-none" id="searchloader" role="status"></div>
+                    <div class="songBox clicksong d-none" id="exampleaddsong">
+                        <img alt="Thumbnail" class="song-thumbnail">
+                        <div class="yoursonglabel" style="flex-grow: 1;">
+                            <div class="songname fw-bold">Song Name</div>
+                            <small class="songartist">Artist Name</small>
+                        </div>
                     </div>
+                    <div id="suggestions" class="d-flex flex-column" style="color: white;overflow-y: scroll;max-height: 50vh;"></div>
                 </div>
-                <div id="suggestions" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
+                <div class="modal-footer">
+                    <button type="button" id="addModalClose" class="btn btn-danger">Close</button>
                 </div>
             </div>
-            <div class="modal-footer">
-            <button id="addModalClose" type="button" class="btn btn-danger" onclick="closeAddModal()">Close</button>
-            </div>
-        </div>
         </div>
     </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="submitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+    <div class="modal fade" id="submitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                <h1 class="modal-title fs-5" id="submitModalLabel">Submit to Spotify?</h1>
-                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="submitModalLabel">Submit to Spotify?</h1>
+                    <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body align-items-center text-center">
                     This will stop all other players from adding songs, and the game will begin
                 </div>
                 <div class="modal-footer">
-                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">No</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="submit()">Yes</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-action="submit-game">Yes</button>
                 </div>
             </div>
-            </div>
         </div>
+    </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="clearModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="clearModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+    <div class="modal fade" id="clearModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="clearModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                <h1 class="modal-title fs-5" id="clearModalLabel">Clear all songs?</h1>
-                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="clearModalLabel">Clear all songs?</h1>
+                    <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
-                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="clearPlaylist()">Yes</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-action="clear-songs">Yes</button>
                 </div>
             </div>
-            </div>
         </div>
+    </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="leaveModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+    <div class="modal fade" id="leaveModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                <h1 class="modal-title fs-5" id="leaveModalLabel">Leave Game?</h1>
-                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="leaveModalLabel">Leave Game?</h1>
+                    <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div id="leaveText" class="modal-body align-items-center text-center">
                     <p>Are you sure you want to leave the game?</p>
@@ -145,27 +141,26 @@
                     <p class="adminonly d-none">Or as host, you can fully close the game for everyone as well</p>
                 </div>
                 <div class="modal-footer">
-                <button type="button" class="btn btn-Primary" data-bs-dismiss="modal">Stay</button>
-                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="leaveGame()">Leave</button>
-                <button type="button" class="btn btn-Danger adminonly d-none" data-bs-dismiss="modal" onclick="closeGame()">Leave & close</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Stay</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-action="leave-game">Leave</button>
+                    <button type="button" class="btn btn-danger adminonly d-none" data-bs-dismiss="modal" data-action="close-game">Leave &amp; close</button>
                 </div>
             </div>
-            </div>
         </div>
-        
-        <!-- Modal -->
-        <div class="modal fade" id="countModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="countModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+    </div>
+
+    <div class="modal fade" id="countModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="countModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                <h1 class="modal-title fs-5" id="leaveModalLabel">Player song counts</h1>
-                <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h1 class="modal-title fs-5" id="countModalLabel">Player song counts</h1>
+                    <button type="button" class="btn-close" style="background-color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="countBody modal-body align-items-center text-center">
                     <div class="row countRow" id="countRow0">
                         <div class="countIcon col-2 d-flex align-items-center text-danger">
                             <div class="image-container">
-                                <img style="width:50px;clip-path: circle(34%);" class="bg-danger" src="track.svg">
+                                <img style="width:50px;clip-path: circle(34%);" class="bg-danger" src="/track.svg" alt="">
                             </div>
                             <span class="ml-2 countText">0</span>
                         </div>
@@ -179,287 +174,30 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
-            </div>
         </div>
+    </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Playlist building phase is over</h1>
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Playlist building phase is over</h1>
                 </div>
                 <div id="endGameBody" class="modal-body">
                     <div id="endGameText">The host has submitted the playlist and now has the spotify link. The game can now begin! You can now leave the game.</div>
-                    <img id="domphoto" class="d-none" style="width: 300px;" src="domphoto.jpg"/>
+                    <img id="domphoto" class="d-none" style="width: 300px;" src="/domphoto.jpg" alt="">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-Danger" data-bs-dismiss="modal" onclick="closeGame()">Close</button>
-                    <button type="button" id="spotLink" class="btn btn-primary d-none" onclick="window.open(playlistLink, '_blank');">Link to Spotify</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-action="close-game">Close</button>
+                    <button type="button" id="spotLink" class="btn btn-primary d-none">Link to Spotify</button>
                 </div>
             </div>
-            </div>
         </div>
+    </div>
+
+    <script type="module" src="/js/player.js"></script>
 </body>
 </html>
-
-<script>
-
-    var playerID = localStorage.getItem("playerID");
-    if (playerID == null){
-        playerID = uuidv4();
-        localStorage.setItem("playerID", playerID)
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const paramPlayerID = urlParams.get('playerID')
-    if (paramPlayerID != playerID){
-        window.location = `/?playerID=${playerID}`;
-    }
-
-    var search = ""
-    var searching = false
-    var audioPlaying=false
-    var playlistLink = ""
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        const input = document.getElementById('songinput');
-        const suggestions = document.getElementById('suggestions');
-    
-        infoRequest = await fetch(`/loadinfo?playerID=${playerID}`);
-        info = await infoRequest.json();
-        
-        
-        // DOM
-        if (navigator.userAgent.includes("Pixel") && !audioPlaying){
-            try{
-                var audio = new Audio('Lobby.mp3');
-                audio.loop = true;
-                await audio.play();
-                audioPlaying = true
-            }catch(e){}
-            
-        }
-
-        if (!info.validGame) {
-            window.location = `/?playerID=${playerID}`;
-            return
-        }
-        
-        document.getElementById("hostname").innerHTML = "The host is " + info.hostName
-        if (info.isPlayerHost==true){
-            let adminOnly = document.getElementsByClassName("adminonly")
-            Array.from(adminOnly).forEach((element) => {
-                element.classList.remove("d-none")
-                if (element.classList.contains("flexElement")){
-                    element.classList.add("d-flex")
-                }
-            })
-        }
-
-        const zeroRow = document.getElementById(`countRow0`);
-        for (let i = 1; i <= info.songsPerPerson; i++) {
-            let newRow = zeroRow.cloneNode(true)
-            newRow.id = "countRow" + i;
-            newRow.getElementsByClassName("countIcon")[0].getElementsByClassName("countText")[0].innerHTML = i;
-            let newBar = newRow.getElementsByClassName("countBarCol")[0].getElementsByClassName("progress")[0]
-            newBar.getElementsByClassName("progress-bar")[0].id = "countBar" + i;
-            newBar.getElementsByClassName("progress-bar")[0].getElementsByClassName("progressText")[0].id="countNumber"+i;
-            document.getElementsByClassName("countBody")[0].appendChild(newRow);
-        }
-
-        update()
-        setInterval(update, 1000)
-
-        input.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter') {
-                searchSongs();
-            }
-        });
-    });
-
-    async function searchSongs(){
-        const input = document.getElementById('songinput');
-        const searchButton = document.getElementById('searchbutton');
-        const suggestions = document.getElementById('suggestions');
-        const closeButton = document.getElementById("addModalClose")
-        const closeButton2 = document.getElementById("addModalClose2")
-        
-        const exampleAddSong = document.getElementById("exampleaddsong")
-
-        if (!searching){
-            $("#searchloader").show();
-            input.disabled = true;
-            searchButton.disabled = true;
-            closeButton.disabled = true;
-            closeButton2.disabled=true;
-            suggestions.innerHTML = '';
-            searching=true
-            var query = input.value;
-            query = encodeURIComponent(query)
-
-            const response = await fetch(`/search?playerID=${playerID}&query=${query}`);
-            if (response.status==200){
-                const songs = await response.json();
-                suggestions.innerHTML = '';
-                songs.forEach(song => {
-                    let newAddSong = exampleAddSong.cloneNode(true)
-                    newAddSong.id = song.id
-                    newAddSong.getElementsByTagName("img")[0].src = song.album.images[0].url
-                    newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songname")[0].innerHTML = song.name
-                    newAddSong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songartist")[0].innerHTML = song.artists.map(artist => artist.name).join(', ')
-                    newAddSong.classList.remove("d-none");
-                    newAddSong.addEventListener('click', () => {
-                        suggestions.innerHTML = '';
-                        input.value='';
-                        addSong(song);
-                    });
-                    suggestions.appendChild(newAddSong);
-                });
-            }else{
-                const errorMsg = await response.text();
-                $('#addModalError').text(errorMsg);
-                $('#addModalError').show();
-                setTimeout(() => {
-                    $('#addModalError').hide();
-                },1000)
-            }
-            $("#searchloader").hide();
-            input.disabled = false;
-            searchButton.disabled = false;
-            closeButton.disabled = false;
-            closeButton2.disabled=false;
-            searching=false
-        }
-    }
-
-    async function addSong(song){
-        const response = await fetch(`/add?playerID=${playerID}`, {
-                method: "POST",
-                headers:{
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(song),
-        });
-        const body = await response.text();
-        switch(body){
-            case "Added":
-                $('#addModalError').hide();
-                $('#addModal').modal('hide');
-                break;
-            default:
-                $('#addModalError').text(body);
-                $('#addModalError').show();
-                setTimeout(() => {
-                    $('#addModalError').hide();
-                },1000)
-                break;
-        }
-        update()
-    }
-
-    async function update(){
-        const response = await fetch(`/update?playerID=${playerID}`);
-        const body = await response.json();
-
-        if (!body.validGame) {
-            window.location = `/?playerID=${playerID}`;
-            return
-        }
-        
-        if (!body.isPlaying){
-            $('#staticBackdrop').modal('show');
-            if (playlistLink != ""){
-                $('#endGameText').text("The link to the playlist here")
-                document.getElementById("spotLink").classList.remove("d-none");
-            }else if (navigator.userAgent.includes("Pixel")){
-                $('#endGameText').text("Game's done bitch");
-                document.getElementById("domphoto").classList.remove("d-none");
-            }
-            return
-        }
-
-        let currentsongids = body.items.map((song) => song.id);
-
-        let examplesong = document.getElementById("examplesong")
-
-        var yourssongs = document.getElementsByClassName("yoursong");
-
-        Array.from(yourssongs).forEach((song) => {
-            if (!currentsongids.includes(song.id)){
-                song.remove()
-                return
-            }else{
-                currentsongids.splice(currentsongids.indexOf(song.id),1);
-            }
-        })
-
-        body.items.forEach((song,index) => {
-            if (currentsongids.includes(song.id)){
-                let newsong = examplesong.cloneNode(true)
-                newsong.id = song.id
-                newsong.getElementsByTagName("img")[0].src = song.album.images[0].url
-                newsong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songname")[0].innerHTML = song.name
-                newsong.getElementsByClassName("yoursonglabel")[0].getElementsByClassName("songartist")[0].innerHTML = song.artists.map(artist => artist.name).join(', ')
-                newsong.getElementsByTagName("button")[0].setAttribute( "onClick", "javascript: remove(this.parentNode.parentNode.id)");
-                newsong.classList.add("yoursong");
-                newsong.classList.remove("d-none");
-                document.getElementById("yoursongs").appendChild(newsong)
-            }
-        })
-        body.countCounts.forEach((count,index) => {
-            document.getElementById("countBar"+index).style.width = (count/body.playerCount)*100+"%"
-            document.getElementById("countNumber"+index).innerHTML = count
-        })
-
-        if (body.items.length >= body.songsPerPerson){
-            document.getElementById("addSongButton").disabled = true;
-        }else{
-            document.getElementById("addSongButton").disabled = false;
-        }
-
-        document.getElementById("playlistcount").innerHTML = body.count+" / "+(body.playerCount*body.songsPerPerson)
-        document.getElementById("playercount").innerHTML = body.playerCount
-        document.getElementById("yoursongcount").innerHTML = body.items.length + " / " + body.songsPerPerson
-    }
-
-    async function remove(id){
-        await fetch(`/remove?playerID=${playerID}&songID=${id}`);
-        update()
-    }
-    async function clearPlaylist(){
-        await fetch(`/clear?playerID=${playerID}`,{method: "POST"});
-        update()
-    }
-    async function submit(){
-        var response = await fetch(`/submit?playerID=${playerID}`,{method: "POST"});
-        const body = await response.text();
-        playlistLink = body
-    }
-
-    async function leaveGame(){
-        var response = await fetch(`/leaveGame?playerID=${playerID}`,{method: "POST"});
-        window.location = `/?playerID=${playerID}`;
-    }
-
-    async function closeGame(){
-        var response = await fetch(`/closeGame?playerID=${playerID}`,{method: "POST"});
-        window.location = `/?playerID=${playerID}`;
-    }
-
-    function closeAddModal(){
-        if (!searching){
-            $('#addModal').modal('hide');
-        }
-    }
-
-    function uuidv4() {
-        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-            (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
-    );
-}
-</script>

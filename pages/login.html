@@ -1,297 +1,130 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Song Game</title>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="custom.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/custom.css">
 </head>
 <body class="text-center" style="color: white;">
-    <img class="mx-auto" src="songgame.png">
+    <img class="mx-auto" src="/songgame.png" alt="Song Game">
     <div class="container d-flex flex-column align-items-center p-2">
         <div class="row container d-flex flex-column align-items-center text-center p-4 m-1">
-            <button id="login" class="btn btn-Primary btn-lg align-items-center mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#newGameModal">
+            <button type="button" id="login" class="btn btn-primary btn-lg align-items-center mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#newGameModal">
                 <span id="loginSpinner" class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
                 <span role="status">Host new game</span>
             </button>
             <div id="yourgame" class="d-none">
                 <div class="highlightBox mt-2 pt-2 pb-2">
-                    <div style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
+                    <div class="d-flex flex-column" style="color: white;overflow-y: scroll;max-height: 50vh;">
                         <div class="songBox">
                             <div class="gamelabel fw-bold" style="flex-grow: 1;">Your Game</div>
-                            <div><button onclick="join(0)" class="btn btn-Primary">Rejoin</button></div>
+                            <div><button type="button" id="rejoinButton" class="btn btn-primary">Rejoin</button></div>
                         </div>
                     </div>
                 </div>
             </div>
             <div>
-                <div class="fw-bold" >
+                <div class="fw-bold">
                     Or join an existing game
                 </div>
                 <div class="highlightBox mt-2 pt-2 pb-2">
-                    <div id="nogames" class="">
-                        <span id="loginSpinner" class="spinner-border spinner-border-lg" aria-hidden="true"></span>
+                    <div id="nogames">
+                        <span class="spinner-border spinner-border-lg" aria-hidden="true"></span>
                         <br>
                         No games found so far
                     </div>
-                    <div id="joingames" style="color: white;overflow-y: scroll;max-height: 50vh;" class="d-flex flex-column">
+                    <div id="joingames" class="d-flex flex-column" style="color: white;overflow-y: scroll;max-height: 50vh;">
                         <div class="songBox d-none" id="exampleGame">
-                            <div class="gamelabel fw-bold" style="flex-grow: 1;">
-                            </div>
-                            <div><button onclick="join(0)" class="btn btn-Primary">Join</button></div>
+                            <div class="gamelabel fw-bold" style="flex-grow: 1;"></div>
+                            <div><button type="button" class="btn btn-primary">Join</button></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="newGameModal" tabindex="-1" aria-labelledby="newGameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="newGameModalLabel">New Game</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body align-items-center text-center">
+                    <div class="mb-3">
+                        <div>
+                            Number of songs per person
+                        </div>
+                        <div id="songCount" class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="songcount" id="songcount1" value="1">
+                            <label class="form-check-label" for="songcount1">1</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="songcount" id="songcount2" value="2">
+                            <label class="form-check-label" for="songcount2">2</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="songcount" id="songcount3" value="3" checked>
+                            <label class="form-check-label" for="songcount3">3</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="songcount" id="songcount4" value="4">
+                            <label class="form-check-label" for="songcount4">4</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="songcount" id="songcount5" value="5">
+                            <label class="form-check-label" for="songcount5">5</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="songcount" id="songcount6" value="6">
+                            <label class="form-check-label" for="songcount6">6</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div>
+                            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseEra" role="button" aria-expanded="false" aria-controls="collapseEra">
+                                Filter by era of music
+                            </a>
+                        </div>
+                        <div class="collapse" id="collapseEra">
+                            <label for="afterRange" class="form-label">After</label>
+                            <input type="range" class="form-range" min="1950" value="1950" id="afterRange">
+                            <div id="afterYear">1950</div>
+                            <label for="beforeRange" class="form-label">Before</label>
+                            <input type="range" class="form-range" min="1950" id="beforeRange">
+                            <div id="beforeYear"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div>
+                            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseGenre" role="button" aria-expanded="false" aria-controls="collapseGenre">
+                                Filter by Genre
+                            </a>
+                        </div>
+                        <div class="collapse" id="collapseGenre">
+                            <div class="search-container">
+                                <div class="input-group">
+                                    <input type="text" id="searchInput" class="form-control bg-danger" placeholder="Search..." aria-label="Search" autocomplete="off">
+                                </div>
+                                <div class="dropdown">
+                                    <ul class="dropdown-menu bg-danger" id="dropdownMenu"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Back</button>
+                    <button type="button" id="createGameButton" class="btn btn-primary" data-bs-dismiss="modal">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/lobby.js"></script>
 </body>
-
-<!-- Modal -->
-<div class="modal fade" id="newGameModal" tabindex="-1" aria-labelledby="newGameModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="newGameModalLabel">New Game</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body align-items-center text-center">
-                <div class="mb-3">
-                    <div>
-                        Number of songs per person     
-                    </div>
-                    <div id="songCount" class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="songcount" id="songcount1" value="1">
-                        <label class="form-check-label" for="songcount1">1</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="songcount" id="songcount2" value="2">
-                        <label class="form-check-label" for="songcount2">2</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="songcount" id="songcount3" value="3" checked>
-                        <label class="form-check-label" for="songcount3">3</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="songcount" id="songcount4" value="4">
-                        <label class="form-check-label" for="songcount4">4</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="songcount" id="songcount5" value="5">
-                        <label class="form-check-label" for="songcount5">5</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="songcount" id="songcount6" value="6">
-                        <label class="form-check-label" for="songcount6">6</label>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div>
-                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseEra" role="button" aria-expanded="false" aria-controls="collapseEra">
-                            Filter by era of music
-                        </a>
-                    </div>
-                    <div class="collapse" id="collapseEra">
-                        <label for="afterRange" class="form-label">After</label>
-                        <input type="range" class="form-range" min="1950" max="2024" value="1950" id="afterRange">
-                        <div id="afterYear">1950</div>
-                        <label for="beforeRange" class="form-label">Before</label>
-                        <input type="range" class="form-range" min="1950" max="2025" value="2025" id="beforeRange">
-                        <div id="beforeYear">2025</div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div>
-                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseGenre" role="button" aria-expanded="false" aria-controls="collapseGenre">
-                            Filter by Genre
-                        </a>
-                    </div>
-                    <div class="collapse" id="collapseGenre">
-                        <div class="search-container">
-                            <div class="input-group">
-                                <input type="text" id="searchInput" class="form-control bg-danger" 
-                                       placeholder="Search..." aria-label="Search" autocomplete="off">
-                            </div>
-                            <div class="dropdown">
-                                <ul class="dropdown-menu bg-danger" id="dropdownMenu"></ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">Back</button>
-                <button type="button" onclick="login()" class="btn btn-primary" data-bs-dismiss="modal">Create</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="joinGameModal" tabindex="-1" aria-labelledby="joinGameModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="joinGameModalLabel">Join Game</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body align-items-center text-center">
-                FORM
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-Danger" data-bs-dismiss="modal">Back</button>
-            </div>
-        </div>
-    </div>
-</div>
 </html>
-
-<script>
-    // Fetch JSON data and initialize dropdown
-    let allData = [];
-    fetch('spotifyGenres.json')
-        .then(response => response.json())
-        .then(data => {
-            allData = data;
-            populateDropdown(allData);
-        })
-        .catch(error => console.error('Error loading JSON:', error));
-
-    // DOM elements
-    const searchInput = document.getElementById('searchInput');
-    const dropdownMenu = document.getElementById('dropdownMenu');
-
-    // Populate dropdown with options
-    function populateDropdown(items) {
-        dropdownMenu.innerHTML = items.map(item => 
-            `<li><a class="dropdown-item" href="#">${item}</a></li>`
-        ).join('');
-    }
-
-    // Filter functionality
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const filteredData = allData.filter(item => 
-            item.toLowerCase().includes(searchTerm)
-        );
-        
-        populateDropdown(filteredData);
-        const dropdown = new bootstrap.Dropdown(dropdownMenu);
-        if (searchTerm.length > 0) {
-            dropdownMenu.classList.add('show');
-        } else {
-            dropdownMenu.classList.remove('show');
-        }
-    });
-
-    // Handle option selection
-    dropdownMenu.addEventListener('click', function(e) {
-        if (e.target.classList.contains('dropdown-item')) {
-            searchInput.value = e.target.textContent;
-            dropdownMenu.classList.remove('show');
-        }
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('#searchInput')) {
-            dropdownMenu.classList.remove('show');
-        }
-    });
-
-    var playerID = localStorage.getItem("playerID");
-    if (playerID == null){
-        playerID = uuidv4();
-        localStorage.setItem("playerID", playerID)
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const paramPlayerID = urlParams.get('playerID')
-    if (paramPlayerID != playerID){
-        window.location = `/?playerID=${playerID}`;
-    }
-
-    let loging = false
-    async function login(){
-        songCount = document.querySelector('input[name="songcount"]:checked').value
-        loging = true
-        document.getElementById("loginSpinner").classList.remove("d-none");
-        document.getElementById("login").disabled=true
-        let era = document.getElementById("afterRange").value+"-"+document.getElementById("beforeRange").value
-        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-        const isRealGenre = allData.includes(searchTerm);
-        let genre = "";
-        if (isRealGenre){
-            genre = searchTerm;
-        }
-        window.location = `/login?playerID=${playerID}&songCount=${songCount}&era=${era}&genre=${genre}`;
-        setTimeout(() => {loging = false}, 20000)
-    }
-
-    async function joinGame(gameID){
-        const response = await fetch(`/joinGame?playerID=${playerID}&gameID=${gameID}`,{method: "POST"})
-        window.location = `/?playerID=${playerID}`;
-    }
-
-    async function checkForGames(){
-        const response = await fetch(`/getGames?playerID=${playerID}`)
-        const games = await response.json()
-
-        if (games.yourGame != undefined){
-            document.getElementById("yourgame").getElementsByTagName("button")[0].setAttribute( "onClick", `javascript: joinGame("${games.yourGame.gameid}")`);
-            document.getElementById("yourgame").classList.remove("d-none")
-            document.getElementById("login").classList.add("d-none")
-        }else{
-            document.getElementById("yourgame").classList.add("d-none")
-            document.getElementById("login").classList.remove("d-none")
-        }
-
-        if (games.otherGames.length > 0){
-            document.getElementById("nogames").classList.add("d-none")
-        }else{
-            document.getElementById("nogames").classList.remove("d-none")
-        }
-
-        let exampleGame = document.getElementById("exampleGame")
-        var gameElements = document.getElementsByClassName("games");
-
-        let currentGameIDs = games.otherGames.map((game) => game.gameid);
-
-        Array.from(gameElements).forEach((game) => {
-            if (!currentGameIDs.includes(game.gameid)){
-                game.remove()
-                return
-            }else{
-                currentGameIDs.splice(currentGameIDs.indexOf(game.gameid),1);
-            }
-        })
-
-        games.otherGames.forEach((game) => {
-            let newgame = exampleGame.cloneNode(true)
-            newgame.id = game.gameid
-            newgame.getElementsByClassName("gamelabel")[0].innerHTML = game.hostName+"'s Game"
-            newgame.getElementsByTagName("button")[0].setAttribute( "onClick", `javascript: joinGame("${game.gameid}")`);
-            newgame.classList.add("games");
-            newgame.classList.remove("d-none");
-            document.getElementById("joingames").appendChild(newgame)
-        })
-    }
-    checkForGames()
-    setInterval(checkForGames,1000);
-
-    document.getElementById("afterRange").addEventListener("input", function() {
-        if (document.getElementById("afterRange").value > document.getElementById("beforeRange").value){
-            document.getElementById("beforeRange").value = document.getElementById("afterRange").value
-        }
-        document.getElementById("afterYear").innerHTML = document.getElementById("afterRange").value
-    });
-    document.getElementById("beforeRange").addEventListener("input", function() {
-        if (document.getElementById("beforeRange").value < document.getElementById("afterRange").value){
-            document.getElementById("afterRange").value = document.getElementById("beforeRange").value
-        }
-        document.getElementById("beforeYear").innerHTML = document.getElementById("beforeRange").value
-    });
-
-
-</script>
