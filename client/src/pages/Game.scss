@@ -1,0 +1,134 @@
+@use '../styles/variables' as *;
+
+.game {
+  min-height: 100vh;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  &__logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  &__host {
+    flex: 1;
+    font-weight: 700;
+  }
+
+  &__stat {
+    flex: 1;
+    font-weight: 700;
+  }
+
+  &__count-button {
+    flex: 0 0 auto;
+
+    img {
+      height: 25px;
+    }
+  }
+
+  &__expand-icon {
+    height: 25px;
+  }
+
+  &__add {
+    width: 100%;
+  }
+
+  // Host controls sit at the bottom of the screen.
+  &__host-actions {
+    margin-top: auto;
+  }
+}
+
+.add-song {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__search {
+    flex: none;
+    display: flex;
+
+    input {
+      flex: 1;
+      min-width: 0;
+      height: 44px;
+      padding: 0 0.75rem;
+      -webkit-appearance: none;
+      appearance: none;
+      background: $text;
+      border: 1px solid transparent;
+      border-radius: $radius 0 0 $radius;
+      color: $text-on-accent;
+      font-size: 16px; // anything smaller makes iOS zoom in on focus
+    }
+
+    .btn {
+      width: 52px;
+      padding: 0;
+      border-radius: 0 $radius $radius 0;
+    }
+
+    img {
+      height: 25px;
+    }
+  }
+
+  &__results {
+    max-height: 50dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  &__loader {
+    align-self: center;
+    margin-top: 2rem;
+  }
+}
+
+.count-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  &__icon {
+    display: flex;
+    flex: 0 0 16.6%;
+    align-items: center;
+    margin-right: 5px;
+    color: $accent;
+
+    img {
+      width: 50px;
+      background: $accent;
+      clip-path: circle(34%);
+    }
+  }
+
+  &__bar {
+    flex: 1;
+  }
+}
+
+.count-chart {
+  &__title {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  &__note {
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
+  }
+}
+
+.end-game__photo {
+  width: 300px;
+  max-width: 100%;
+}

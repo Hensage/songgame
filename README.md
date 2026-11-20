@@ -26,6 +26,7 @@ automatically, and each game holds roughly 55 minutes of access token at a time.
 
 ```bash
 npm install
+npm run build   # builds the React client into dist/
 npm start
 ```
 
@@ -35,9 +36,14 @@ and "submitting" returns the chosen track URIs instead of a playlist URL. This i
 the fastest way to work on the UI.
 
 ```bash
-npm run dev   # restart on file changes
-npm test      # unit + HTTP integration tests
+npm run dev          # API server, restarts on file changes
+npm run dev:client   # Vite dev server with hot reload (proxies the API to :3000)
+npm test             # unit + HTTP integration tests
 ```
+
+For UI work, run `npm run dev` and `npm run dev:client` together and open the Vite
+URL (<http://localhost:5173>). The Spotify login redirects back to the API port, so
+test the full login flow against the built app on port 3000.
 
 ## Configuration
 
@@ -80,15 +86,19 @@ Then add `http://localhost:3000/callback` as a redirect URI in the
 ```
 server.js            Entry point: loads config, starts HTTP server and sweep timer
 src/
-  app.js             Express routes (HTML pages + JSON API)
+  app.js             Express routes (JSON API + the built client)
   config.js          Env/file configuration and validation
   game.js            Game domain model (players, songs, shuffle, submit)
   gameStore.js       In-memory games, JSON persistence, expiry sweep
   random.js          ID generation and the interleaving shuffle
   services.js        Dependency wiring shared by the server and tests
   spotify.js         Spotify Web API client (fetch-based, no SDK)
-pages/               Server-rendered HTML shells
-public/              Static assets and browser ES modules (public/js)
+client/              React app (Vite). No UI library: components and SCSS are custom
+  public/            Static assets copied as-is (fonts, images, genres, audio)
+  src/components/    Button, Modal, Panel, ProgressBar, SongRow, ...
+  src/pages/         Lobby and Game screens and their modals
+  src/styles/        SCSS variables and global styles
+dist/                Built client served by Express (git-ignored)
 test/                node:test suites
 ```
 
@@ -99,7 +109,7 @@ browser and stored in `localStorage`; they are not authenticated.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/` | Serves the lobby, game, or "loading" page |
+| `GET` | `/` | Serves the React app, which shows the lobby or the game |
 | `GET` | `/getGames` | Live games for the lobby |
 | `POST` | `/joinGame?gameID=` | Join a game (leaves the current one first) |
 | `POST` | `/leaveGame` | Leave the current game |

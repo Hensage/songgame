@@ -1,0 +1,80 @@
+@use '../styles/variables' as *;
+
+.new-game {
+  &__section {
+    margin-bottom: 1rem;
+  }
+
+  &__choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    cursor: pointer;
+
+    input {
+      width: 1.25rem;
+      height: 1.25rem;
+      accent-color: $primary;
+    }
+  }
+
+  &__range {
+    display: block;
+    width: 100%;
+    height: 44px;
+    accent-color: $primary;
+  }
+}
+
+.genre-picker {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+
+  &__input {
+    width: 100%;
+    height: 44px;
+    padding: 0 0.75rem;
+    -webkit-appearance: none;
+    appearance: none;
+    background: $accent;
+    border: 1px solid transparent;
+    border-radius: $radius;
+    color: $text-on-accent;
+    font-size: 16px; // anything smaller makes iOS zoom in on focus
+  }
+
+  &__menu {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    max-height: 200px;
+    margin: 2px 0 0;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+    background: $accent;
+    border-radius: $radius;
+    color: $text-on-accent;
+    list-style: none;
+    text-align: left;
+  }
+
+  &__option {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.25rem 1rem;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.12);
+    }
+  }
+}

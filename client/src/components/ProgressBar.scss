@@ -1,0 +1,24 @@
+@use '../styles/variables' as *;
+
+.progress {
+  width: 100%;
+  height: 25px;
+  overflow: hidden;
+  background: $background;
+  border-radius: $radius;
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    background: $primary;
+    color: $text-on-accent;
+    font-size: 1.2rem;
+    transition: width 0.3s;
+  }
+
+  &__label {
+    padding-right: 0.5rem;
+  }
+}

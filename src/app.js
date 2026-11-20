@@ -46,9 +46,7 @@ export function createApp({ config, store, spotify, createGame }) {
 
   app.disable('x-powered-by');
   app.use(express.json());
-  app.use(express.static(config.publicDir));
-
-  const pagePath = (fileName) => path.join(config.pagesDir, fileName);
+  app.use(express.static(config.clientDir));
 
   function requirePlayerId(req, res) {
     const playerID = readPlayerId(req);
@@ -63,15 +61,9 @@ export function createApp({ config, store, spotify, createGame }) {
     }
   }
 
+  // The React app decides between lobby and game itself, using /loadinfo.
   app.get('/', (req, res) => {
-    const playerID = readPlayerId(req);
-    if (!playerID) {
-      res.sendFile(pagePath('getplayerid.html'));
-      return;
-    }
-
-    const game = store.findByPlayerId(playerID);
-    res.sendFile(pagePath(game ? 'index.html' : 'login.html'));
+    res.sendFile(path.join(config.clientDir, 'index.html'));
   });
 
   app.get('/getGames', (req, res) => {

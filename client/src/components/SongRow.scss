@@ -1,0 +1,71 @@
+@use '../styles/variables' as *;
+
+.song-row {
+  display: flex;
+  align-items: center;
+  margin: 2px;
+  padding: 10px;
+  background: $surface-raised;
+  border-radius: $radius-lg;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+
+  &--clickable {
+    width: calc(100% - 4px);
+    -webkit-appearance: none;
+    appearance: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+
+    &:active {
+      background: #d3dad2;
+      color: $text-on-accent;
+    }
+
+    // Touch screens keep :hover after a tap, so only highlight it with a real pointer.
+    @media (hover: hover) {
+      &:hover {
+        background: #d3dad2;
+        color: $text-on-accent;
+      }
+    }
+  }
+
+  &__thumbnail {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    margin-right: 12px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-weight: 700;
+  }
+
+  &__artist {
+    font-size: 0.875em;
+    font-weight: 300;
+  }
+}
+
+.explicit-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 4px;
+  background: #a7a7a7;
+  border-radius: 2px;
+  color: $text-on-accent;
+  font-size: 0.65em;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  user-select: none;
+}

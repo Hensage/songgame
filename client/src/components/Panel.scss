@@ -1,0 +1,12 @@
+@use '../styles/variables' as *;
+
+.panel {
+  width: 100%;
+  padding: 0.25rem;
+  background: $surface;
+  border-radius: $radius;
+
+  &--padded {
+    padding: 0.75rem 0.25rem;
+  }
+}

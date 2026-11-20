@@ -10,16 +10,16 @@ function fallbackUuid() {
 }
 
 function createPlayerId() {
-  if (crypto.randomUUID) return crypto.randomUUID();
-  return fallbackUuid();
+  return crypto.randomUUID ? crypto.randomUUID() : fallbackUuid();
 }
 
+/** This browser's player ID, created and stored on first use. */
 export function getPlayerId() {
   let playerID = null;
   try {
     playerID = localStorage.getItem(STORAGE_KEY);
   } catch {
-    // localStorage can be unavailable in private/locked-down contexts.
+    // localStorage can be unavailable in private or locked-down contexts.
   }
 
   if (!playerID) {
@@ -29,22 +29,6 @@ export function getPlayerId() {
     } catch {
       // Keep the in-memory ID for this page load.
     }
-  }
-
-  return playerID;
-}
-
-export function goHome(playerID) {
-  window.location.replace(`/?playerID=${encodeURIComponent(playerID)}`);
-}
-
-/** Ensures the URL carries this browser's player ID, mirroring it if not. */
-export function ensurePlayerIdInUrl() {
-  const playerID = getPlayerId();
-  const urlPlayerID = new URLSearchParams(window.location.search).get('playerID');
-
-  if (urlPlayerID !== playerID) {
-    goHome(playerID);
   }
 
   return playerID;

@@ -1,0 +1,87 @@
+@use '../styles/variables' as *;
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem 0.5rem;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.6);
+  animation: modal-fade 0.15s ease-out;
+
+  &__dialog {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    max-height: calc(100dvh - 2rem);
+    background: $background;
+    border: 1px solid $border;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+  }
+
+  &__header,
+  &__footer {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  &__header {
+    justify-content: space-between;
+    border-bottom: 1px solid $border;
+  }
+
+  &__footer {
+    justify-content: flex-end;
+    border-top: 1px solid $border;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    padding: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    text-align: center;
+  }
+
+  &__close {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    margin-right: -0.5rem;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-radius: $radius;
+    color: $text;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+}

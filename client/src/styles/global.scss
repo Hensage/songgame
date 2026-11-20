@@ -1,0 +1,105 @@
+@use 'variables' as *;
+
+@font-face {
+  font-family: circular;
+  src: url('/circular-std-medium-500.ttf');
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: $background;
+  color: $text;
+  font-family: $font-family;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+img {
+  vertical-align: middle;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: $surface;
+}
+::-webkit-scrollbar-thumb {
+  background: $primary;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: $secondary;
+}
+
+.faint {
+  color: $text-faint;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 720px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right))
+    max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.page__logo {
+  max-width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+
+  > .grow {
+    flex: 1;
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.scroll-list {
+  overflow-y: auto;
+  max-height: 50dvh;
+  overscroll-behavior: contain;
+}

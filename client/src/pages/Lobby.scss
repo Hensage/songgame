@@ -1,0 +1,32 @@
+@use '../styles/variables' as *;
+
+.lobby {
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  &__section {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+.game-row {
+  display: flex;
+  align-items: center;
+  margin: 2px;
+  padding: 10px;
+  background: $surface-raised;
+  border-radius: $radius-lg;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  &__label {
+    flex: 1;
+    font-weight: 700;
+    text-align: left;
+  }
+}
