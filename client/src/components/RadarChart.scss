@@ -1,0 +1,36 @@
+@use '../styles/variables' as *;
+
+.radar {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  margin: 0 auto;
+
+  &__ring,
+  &__axis {
+    fill: none;
+    stroke: $border;
+    stroke-width: 1;
+  }
+
+  &__area {
+    fill: rgba($primary, 0.35);
+    stroke: $primary;
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  &__dot {
+    fill: $primary;
+  }
+
+  &__label {
+    fill: $text;
+    font-size: 12px;
+  }
+
+  &__value {
+    fill: $text-faint;
+  }
+}

@@ -102,7 +102,7 @@ test('stub mode game flow', async (t) => {
     assert.deepEqual(Object.keys(lobby.yourGame).sort(), [
       'era',
       'gameid',
-      'genre',
+      'genres',
       'hostName',
       'playerCount',
       'songsPerPerson',
@@ -123,6 +123,8 @@ test('stub mode game flow', async (t) => {
       hostName: 'STUBACCOUNT',
       isPlayerHost: false,
       songsPerPerson: 3,
+      era: '1990-1999',
+      genres: [],
     });
   });
 
@@ -218,12 +220,75 @@ test('stub mode game flow', async (t) => {
     );
   });
 
+  await t.test('reports a match count for a genre and era before login', async () => {
+    const any = await json('/genreCheck', { era: '1990-1999' });
+    const rock = await json('/genreCheck', { genre: ' Rock ', era: '1990-1999' });
+
+    assert.equal(typeof any.total, 'number');
+    assert.ok(any.total > rock.total);
+    assert.deepEqual(await json('/genreCheck', { genre: 'rock', era: '1990-1999' }), rock);
+    assert.equal((await fetch(api('/genreCheck', { genre: 'rock', era: 'garbage' }))).status, 200);
+  });
+
+  await t.test('hosts a game with several genres, de-duplicated and capped', async () => {
+    const params = new URLSearchParams({ playerID: 'host-3', songCount: '2', era: '1990-1999' });
+    for (const genre of ['Rock', 'pop', 'rock ', 'jazz', 'funk', 'soul', 'punk']) params.append('genre', genre);
+
+    const login = await fetch(`${baseURL}/login?${params}`, { redirect: 'manual' });
+    const state = new URL(login.headers.get('location')).searchParams.get('state');
+    await fetch(api('/callback', { state }), { redirect: 'manual' });
+
+    const info = await json('/loadinfo', { playerID: 'host-3' });
+    assert.deepEqual(info.genres, ['rock', 'pop', 'jazz', 'funk', 'soul']);
+
+    const params2 = new URLSearchParams({ era: '1990-1999' });
+    params2.append('genre', 'rock');
+    params2.append('genre', 'pop');
+    const several = await (await fetch(`${baseURL}/genreCheck?${params2}`)).json();
+    const rockOnly = await json('/genreCheck', { genre: 'rock', era: '1990-1999' });
+    assert.ok(several.total > rockOnly.total, 'counts add up across genres');
+
+    await post('/closeGame', { playerID: 'host-3' });
+  });
+
+  await t.test('records artist genres on added songs and counts them in updates', async () => {
+    await hostGame('host-4', { songCount: '3', era: '1990-1999' });
+
+    const tracks = await json('/search', { playerID: 'host-4', query: 'love' });
+    const abba = tracks.find((track) => track.artists[0].name === 'ABBA');
+    const bowie = tracks.find((track) => track.artists[0].name === 'David Bowie');
+    assert.equal((await addSong('host-4', abba)).status, 200);
+    assert.equal((await addSong('host-4', bowie)).status, 200);
+
+    const stored = store.findByPlayerId('host-4').playlist;
+    assert.ok(stored.every((entry) => entry.genres.length > 0), 'each song got its artist genres');
+
+    const state = await json('/update', { playerID: 'host-4' });
+    assert.ok(state.genreCounts.length > 0);
+    assert.ok(state.genreCounts.every((entry) => entry.label !== 'No genre listed'));
+    const tags = stored.reduce((total, entry) => total + new Set(entry.genres).size, 0);
+    assert.equal(
+      state.genreCounts.reduce((total, entry) => total + entry.value, 0),
+      tags,
+      'every genre of every song is counted once',
+    );
+
+    // A song whose artist id isn't a valid Spotify id is still added, just without genres.
+    const odd = { ...song(9), artists: [{ id: '../evil', name: 'Odd' }] };
+    assert.equal((await addSong('host-4', odd)).status, 200);
+    assert.deepEqual(store.findByPlayerId('host-4').playlist.at(-1).genres, []);
+    const after = await json('/update', { playerID: 'host-4' });
+    assert.equal(after.genreCounts.find((entry) => entry.label === 'No genre listed').value, 1);
+
+    await post('/closeGame', { playerID: 'host-4' });
+  });
+
   await t.test('defaults the era range to the current year', async () => {
     const newGame = await hostGame('host-2', { songCount: '1' });
 
     assert.equal(newGame.era, `1950-${new Date().getFullYear()}`);
     assert.equal(newGame.songsPerPerson, 1);
-    assert.equal(newGame.genre, '');
+    assert.deepEqual(newGame.genres, []);
 
     await post('/closeGame', { playerID: 'host-2' });
   });

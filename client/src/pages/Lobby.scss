@@ -1,0 +1,47 @@
+@use '../styles/variables' as *;
+
+.lobby {
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0;
+  }
+
+  &__section {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  &__heading {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+}
+
+// Flat rows like Spotify's lists: a white title, a grey subtitle, an action on the right.
+.game-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 0;
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+
+  &__title {
+    font-size: 1rem;
+  }
+
+  &__subtitle {
+    color: $text-faint;
+    font-size: 13px;
+  }
+}

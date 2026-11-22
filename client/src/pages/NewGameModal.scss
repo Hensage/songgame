@@ -1,0 +1,126 @@
+@use '../styles/variables' as *;
+
+.new-game {
+  &__section {
+    margin-bottom: 1rem;
+  }
+
+  &__choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    cursor: pointer;
+
+    input {
+      width: 1.25rem;
+      height: 1.25rem;
+      accent-color: $primary;
+    }
+  }
+
+  &__hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.875rem;
+  }
+
+  // Space between the genre chips and the "More specific genre" button.
+  &__more {
+    margin-top: 1rem;
+  }
+
+  // A plain line of coloured text under the filters, with no box around it.
+  &__match {
+    margin: 0;
+    font-size: 13px;
+
+    &--plenty {
+      color: $primary;
+    }
+
+    &--few {
+      color: #ffda6a;
+    }
+
+    &--none {
+      color: #f3727f;
+    }
+  }
+
+  &__range {
+    display: block;
+    width: 100%;
+    height: 44px;
+    accent-color: $primary;
+  }
+}
+
+.genre-picker {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+
+  &__input {
+    width: 100%;
+    height: 44px;
+    padding: 0 1rem 0 2.75rem;
+    -webkit-appearance: none;
+    appearance: none;
+    background: $text; // white, like the Spotify app's search bar
+    border: 0;
+    border-radius: $radius-sm;
+    color: $text-on-accent;
+    font-size: 16px; // anything smaller makes iOS zoom in on focus
+
+    &::placeholder {
+      color: $placeholder;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $primary;
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    top: 22px;
+    left: 0.75rem;
+    z-index: 1;
+    color: $text-on-accent;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  &__menu {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    max-height: 200px;
+    margin: 2px 0 0;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+    background: $surface-raised;
+    border-radius: $radius-md;
+    color: $text;
+    list-style: none;
+    text-align: left;
+  }
+
+  &__option {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.25rem 1rem;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: $surface-hover;
+    }
+  }
+}

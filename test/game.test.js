@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { Game, SONG_ALREADY_EXISTS, SONG_LIMIT_REACHED } from '../src/game.js';
+import { countGenres, Game, NO_GENRE_LABEL, SONG_ALREADY_EXISTS, SONG_LIMIT_REACHED } from '../src/game.js';
 
 function createFakeSpotify() {
   const calls = { created: [], added: [], refreshed: 0 };
@@ -31,7 +31,7 @@ function createGame(overrides = {}) {
     refreshToken: 'refresh-token',
     songsPerPerson: 2,
     era: '1990-1999',
-    genre: 'rock',
+    genres: ['rock'],
     spotify: createFakeSpotify(),
     ...overrides,
   });
@@ -202,4 +202,41 @@ test('serialisation round-trips the persisted game state', () => {
   assert.equal(restored.fullyExpires, game.fullyExpires);
   assert.deepEqual(restored.players, game.players);
   assert.deepEqual(restored.playlist, game.playlist);
+});
+test('games saved with a single genre load it as a list', () => {
+  const saved = { hostPlayerID: 'host', hostid: 'spotify-user', hostName: 'Host', songsPerPerson: 2, era: '1990-1999' };
+
+  assert.deepEqual(Game.fromJSON({ ...saved, genre: 'rock' }).genres, ['rock']);
+  assert.deepEqual(Game.fromJSON({ ...saved, genres: ['rock', 'pop'] }).genres, ['rock', 'pop']);
+  assert.deepEqual(Game.fromJSON(saved).genres, []);
+});
+
+test('countGenres counts a song toward each of its genres, most common first', () => {
+  const playlist = [
+    { id: '1', genres: ['pop', 'dance pop'] },
+    { id: '2', genres: ['pop'] },
+    { id: '3', genres: ['rock', 'rock'] },
+    { id: '4', genres: [] },
+    { id: '5' },
+  ];
+
+  // Ties are listed alphabetically.
+  assert.deepEqual(countGenres(playlist), [
+    { label: NO_GENRE_LABEL, value: 2 },
+    { label: 'pop', value: 2 },
+    { label: 'dance pop', value: 1 },
+    { label: 'rock', value: 1 },
+  ]);
+  assert.deepEqual(countGenres([]), []);
+});
+
+test('updates include the genre counts of the playlist', () => {
+  const game = new Game({ hostPlayerID: 'host', hostId: 'x', hostName: 'Host', songsPerPerson: 3 });
+  game.addSong({ id: 's1', uri: 'u1', playerID: 'host', genres: ['jazz'] });
+  game.addSong({ id: 's2', uri: 'u2', playerID: 'host', genres: ['jazz', 'soul'] });
+
+  assert.deepEqual(game.update('host').genreCounts, [
+    { label: 'jazz', value: 2 },
+    { label: 'soul', value: 1 },
+  ]);
 });

@@ -17,7 +17,7 @@ function makeGame(overrides = {}) {
     refreshToken: 'refresh-token',
     songsPerPerson: 3,
     era: '1950-1999',
-    genre: '',
+    genres: [],
     ...overrides,
   });
 }

@@ -1,0 +1,124 @@
+@use '../styles/variables' as *;
+
+// Sizes follow Spotify's phone layout: 48px by default, 32px when small.
+// Colours: green for the one main action on a screen, white for everything else.
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 8px 32px;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  border-radius: $radius-pill;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $text;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background: $primary;
+    color: $text-on-accent;
+  }
+
+  &--secondary {
+    background: $text;
+    color: $text-on-accent;
+  }
+
+  // A quiet pill with a thin grey outline, for toggles.
+  &--outline {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px $outline;
+    color: $text;
+  }
+
+  // A bare 48px icon button with a grey glyph, like Spotify's row actions.
+  &--icon {
+    flex: none;
+    width: 48px;
+    padding: 0;
+    background: transparent;
+    color: $text-faint;
+
+    &:hover:not(:disabled) {
+      filter: none;
+      color: $text;
+    }
+  }
+
+  // 32px high and 13px text, with the tap area padded back out to 44px.
+  &--small {
+    flex: none;
+    min-height: 32px;
+    padding: 4px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -6px -4px;
+    }
+  }
+
+  &--round {
+    width: 48px;
+    padding: 0;
+  }
+
+  // Buttons with an icon show their text label normally; the icon only appears when
+  // the page is squashed (see the container query at the end of this file).
+  &__icon {
+    display: none;
+    flex: none;
+  }
+
+  // Buttons that share a row split it evenly, so they need less side padding.
+  &--grow {
+    flex: 1;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+// When the page content is narrower than this, buttons that have an icon drop their
+// label and show only the icon. The `.page` element is the container being measured,
+// so dialogs (which render outside it) always keep their labels.
+@container (max-width: 21rem) {
+  .btn--has-icon {
+    .btn__label {
+      display: none;
+    }
+
+    .btn__icon {
+      display: block;
+    }
+
+    &:not(.btn--grow) {
+      width: 48px;
+      padding: 0;
+    }
+
+    &.btn--small:not(.btn--grow) {
+      width: 32px;
+    }
+  }
+}

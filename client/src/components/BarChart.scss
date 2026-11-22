@@ -1,0 +1,42 @@
+@use '../styles/variables' as *;
+
+.bars {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 6rem 1fr 2rem;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__track {
+    height: 12px;
+    background: $background;
+    border-radius: $radius-pill;
+  }
+
+  &__fill {
+    display: block;
+    height: 100%;
+    background: $primary;
+    border-radius: $radius-pill;
+    transition: width 0.3s;
+  }
+
+  &__value {
+    font-weight: 700;
+    text-align: right;
+  }
+}

@@ -1,0 +1,35 @@
+@use '../styles/variables' as *;
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0 1rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background: $surface-raised;
+  border: 0;
+  border-radius: $radius-pill;
+  color: $text;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid $text;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &[aria-pressed='true'] {
+    background: $primary;
+    color: $text-on-accent;
+  }
+}
